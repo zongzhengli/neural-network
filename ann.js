@@ -1,6 +1,6 @@
 function Node(layer, weightsLength) {
     this.layer = layer;
-    this.weights = _.times(weightsLength, function () { return 1; });
+    this.weights = _.times(weightsLength, _.constant(1));
 
     if (typeof Node.counter === "undefined") {
         Node.counter = 0;

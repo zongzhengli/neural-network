@@ -1,7 +1,10 @@
-$(window).on("load", function() {
+$(function() {
     var app = new ViewModel();
     app.network.layers[0].addNode();
     app.network.layers[0].addNode();
-    ko.applyBindings(app);
+    app.onChangeNetwork();
     app.draw();
+    ko.applyBindings(app);
+
+    $(".popover").popover();
 });

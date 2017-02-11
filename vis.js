@@ -55,12 +55,12 @@ _.extend(Visualization.prototype, {
             .on("mouseover", function () {
                 drawRect("horizontal", plusLargeLength, plusLargeThickness);
                 drawRect("vertical", plusLargeThickness, plusLargeLength);
-                $("body").css("cursor", "pointer");
+                $(document.body).css("cursor", "pointer");
             })
             .on("mouseout", function () {
                 drawRect("horizontal", plusLength, plusThickness);
                 drawRect("vertical", plusThickness, plusLength);
-                $("body").css("cursor", "default");
+                $(document.body).css("cursor", "default");
             });
 
         function drawRect(rectClass, w, h) {

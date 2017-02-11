@@ -1,0 +1,25 @@
+svg.network {
+}
+
+circle.node {
+    fill: purple;
+}
+
+text.node {
+    fill: white;
+    text-anchor: middle;
+    font-family: monospace;
+    font-size: 10px;
+}
+
+path.edge {
+    stroke: gray;
+    stroke-width: 1px;
+}
+path.edge.zero {
+    visibility: hidden;
+}
+
+rect.plus {
+    fill: gray;
+}

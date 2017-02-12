@@ -9,9 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js"></script>
+    <script src="expr.js"></script>
     <script src="ann.js"></script>
     <script src="vis.js"></script>
-    <script src="expr.js"></script>
     <script src="app.js"></script>
     <script src="main.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
@@ -22,20 +22,21 @@
     <div class="col-md-8">
         <svg class="network" viewBox="0 0 500 500"></svg>
     </div>
-    <div class="col-md-4" data-bind="foreach: expressions">
+    <div class="col-md-4">
+        <svg class="graph" viewBox="0 0 200 200"></svg>
 
-        <div data-bind="attr: { 'data-something': 1 }"></div>
+        <div data-bind="foreach: expressions">
+            <div class="input-group"
+                 data-toggle="popover"
+                 data-placement="left"
+                 data-trigger="manual"
+                 data-bind="attr: { 'data-content': error }">
 
-        <div class="input-group"
-             data-toggle="popover"
-             data-placement="left"
-             data-trigger="manual"
-             data-bind="attr: { 'data-content': error }">
-
-            <span class="input-group-addon" data-bind="html: $root.signature($index())"></span>
-            <input class="form-control" type="text"
-                   data-bind="value: body, 
-                              event: { change: $root.onChangeExpression.bind($root) }">
+                <span class="input-group-addon" data-bind="html: $root.functionSignature($index())"></span>
+                <input class="form-control" type="text"
+                       data-bind="value: body, 
+                                  event: { change: $root.onChangeExpression.bind($root) }">
+            </div>
         </div>
     </div>
 </body>

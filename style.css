@@ -1,3 +1,11 @@
+body {
+    background-color: #303030;
+}
+
+svg.network {
+    background-color: #333333;
+}
+
 circle.node {
     fill: purple;
 }
@@ -21,9 +29,30 @@ rect.plus {
     fill: gray;
 }
 
-* {
-  border-radius: 0 !important;
+svg.graph {
+    background-color: #333333;
 }
+
+rect.plot {
+    fill: #333333;
+    stroke: gray;
+    stroke-width: 0.5px;
+}
+
+path.plot.actual {
+    stroke: gray;
+    stroke-width: 0.5px;
+}
+
+path.plot.sample {
+    stroke: gray;
+    stroke-width: 0.5px;
+}
+
+* {
+    border-radius: 0 !important;
+}
+
 .popover {
     background-color: #b33f2d;
     border-radius: 0;
@@ -34,4 +63,20 @@ rect.plus {
 }
 .popover.left > .arrow:after {
     border-left-color: #b33f2d;
+}
+
+.input-group {
+    margin-top: 10px;
+}
+
+span {
+    color: gray !important;
+    border: 0 !important;
+    background-color: #202020 !important;
+}
+
+input {
+    color: gray !important;
+    border: 0 !important;
+    background-color: #252525 !important;
 }

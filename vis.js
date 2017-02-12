@@ -1,5 +1,5 @@
 function NetworkVis(network, listener) {
-    this.svgW = 500;
+    this.svgW = 400;
     this.svgH = 500;
     this.network = network;
     this.listener = listener;
@@ -9,13 +9,13 @@ _.extend(NetworkVis.prototype, {
     nodeXScale: function () {
         return d3.scaleLinear()
             .domain([-0.5, this.network.layers.length - 0.5])
-            .range([0.1 * this.svgW, 0.9 * this.svgW]);
+            .range([0.05 * this.svgW, 0.95 * this.svgW]);
     },
 
     nodeYScale: function (layer) {
         return d3.scaleLinear()
             .domain([-0.5, layer.nodes.length - 0.5])
-            .range([0.1 * this.svgH, 0.9 * this.svgH]);
+            .range([0.1 * this.svgH, 0.95 * this.svgH]);
     },
 
     draw: function () {
@@ -174,8 +174,8 @@ _.extend(NetworkVis.prototype, {
 });
 
 function GraphVis() {
-    this.svgW = 200;
-    this.svgH = 200;
+    this.svgW = 400;
+    this.svgH = 300;
 }
 
 _.extend(GraphVis.prototype, {
@@ -220,7 +220,7 @@ _.extend(GraphVis.prototype, {
             .each(function (dataForInputs, outputIndex) {
                 var outputGroup = d3.select(this);
 
-                var outputTextX = xScale(0) - 12;
+                var outputTextX = xScale(0) - 20;
                 var outputTextY = yScale(outputIndex + 0.5);
 
                 var outputText = outputGroup.select("text.output");

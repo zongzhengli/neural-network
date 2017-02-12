@@ -1,8 +1,10 @@
 function ViewModel() {
     this.network = new Network();
+    /*/
     this.network.addLayer();
     this.network.layers[1].addNode();
     this.network.layers[0].addNode();
+    //*/
     /*/
     this.network.layers[0].addNode();
     this.network.layers[0].addNode();
@@ -56,13 +58,6 @@ _.extend(ViewModel.prototype, {
     },
 
     generateGraphData: function () {
-        /*/
-        return [[{
-            sample: [0, 0.2, 0.4, 0.6, 0.8, 1],
-            actual: [0, 0.05, 0.1, 0.2, 0.9, 1],
-            estimated: [0, 0.2, 0.4, 0.6, 0.8, 1],
-        }]];
-        /*/
         var self = this;
         var symbolCount = this.inputCount();
         var symbols = _.take(Expression.symbols, symbolCount);

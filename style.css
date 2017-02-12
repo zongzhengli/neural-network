@@ -1,5 +1,12 @@
 body {
+    background-color: #353535;
+}
+div.right {
     background-color: #303030;
+    min-height: 100vh;
+}
+div.bottom {
+    padding-bottom: 40px;
 }
 
 svg.network {
@@ -11,7 +18,7 @@ circle.node {
 text.node {
     fill: white;
     text-anchor: middle;
-    font-family: sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     font-size: 10px;
 }
 path.edge {
@@ -26,16 +33,16 @@ rect.plus {
 }
 
 svg.graph {
-
+    margin-top: 20px;
 }
 text.output, text.input {
     fill: gray;
     text-anchor: middle;
-    font-family: sans-serif;
-    font-size: 8px;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 10px;
 }
 rect.plot {
-    fill: #333333;
+    fill: #353535;
 }
 path.plot.actual {
     stroke: gray;
@@ -54,6 +61,7 @@ path.plot.estimated {
     background-color: #b33f2d;
     border-radius: 0;
     color: white;
+    font-family: 'Ubuntu', sans-serif;
 }
 .popover.left > .arrow {
     border-left-color: #b33f2d;
@@ -63,7 +71,9 @@ path.plot.estimated {
 }
 
 .input-group {
+    margin-left: 40px;
     margin-top: 10px;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 span {

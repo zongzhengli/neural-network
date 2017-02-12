@@ -16,16 +16,21 @@
     <script src="main.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="col-md-8">
-        <svg class="network" viewBox="0 0 500 500"></svg>
+    <div class="col-md-6 left">
+        <svg class="network" viewBox="0 0 400 500"></svg>
     </div>
-    <div class="col-md-4">
-        <svg class="graph" viewBox="0 0 200 200"></svg>
 
-        <div data-bind="foreach: expressions">
+    <div class="col-md-6 right">
+        <svg class="graph" viewBox="0 0 400 300"></svg>
+
+        <div class="col-md-11 bottom"
+             data-bind="template: { foreach: expressions,
+                                    beforeRemove: function (e) { $(e).fadeOut(); },
+                                    afterAdd: function (e) { $(e).hide().fadeIn(); } }">
             <div class="input-group"
                  data-toggle="popover"
                  data-placement="left"

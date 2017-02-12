@@ -3,20 +3,17 @@ body {
 }
 
 svg.network {
-    background-color: #333333;
-}
 
+}
 circle.node {
     fill: purple;
 }
-
 text.node {
     fill: white;
     text-anchor: middle;
-    font-family: monospace;
+    font-family: sans-serif;
     font-size: 10px;
 }
-
 path.edge {
     stroke: gray;
     stroke-width: 1px;
@@ -24,28 +21,28 @@ path.edge {
 path.edge.zero {
     visibility: hidden;
 }
-
 rect.plus {
     fill: gray;
 }
 
 svg.graph {
-    background-color: #333333;
-}
 
+}
+text.output, text.input {
+    fill: gray;
+    text-anchor: middle;
+    font-family: sans-serif;
+    font-size: 8px;
+}
 rect.plot {
     fill: #333333;
-    stroke: gray;
-    stroke-width: 0.5px;
 }
-
 path.plot.actual {
     stroke: gray;
     stroke-width: 0.5px;
 }
-
-path.plot.sample {
-    stroke: gray;
+path.plot.estimated {
+    stroke: purple;
     stroke-width: 0.5px;
 }
 
@@ -74,7 +71,6 @@ span {
     border: 0 !important;
     background-color: #202020 !important;
 }
-
 input {
     color: gray !important;
     border: 0 !important;

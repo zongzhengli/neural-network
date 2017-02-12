@@ -1,10 +1,6 @@
 var Expression = {
     symbols: ["x", "y", "z", "u", "v", "w"],
 
-    take: function (varCount) {
-        return _.take(this.symbols, varCount).join(", ");
-    },
-
     validate: function (expr, varCount) {
         var parser = math.parser();
         try {
@@ -15,13 +11,13 @@ var Expression = {
         return null;
     },
 
-    evaluate: function (expr, values) {
+    evaluate: function (expr, values, code) {
+        code = code || math.compile(expr);
         var symbols = _.take(this.symbols, values.length);
         var scope = _(symbols)
             .map(function (symbol, i) { return [symbol, values[i]]; })
             .fromPairs()
             .value();
-        var code = math.compile(expr);
         return code.eval(scope);
     },
 };

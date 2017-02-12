@@ -27,8 +27,8 @@ function ViewModel() {
 
 _.extend(ViewModel.prototype, {
     onChangeNetwork: function () {
-        var inputLayer = this.network.layers[0];
-        var outputLayer = this.network.layers[this.network.layers.length - 1];
+        var inputLayer = this.network.inputLayer();
+        var outputLayer = this.network.outputLayer();
 
         this.inputCount(inputLayer.nodes.length);
 
@@ -38,6 +38,7 @@ _.extend(ViewModel.prototype, {
                 error: ko.observable(""),
             });
         }
+        this.graphVis.draw(this.generateGraphData());
     },
 
     onChangeExpression: function (koExpr, event) {
@@ -45,34 +46,55 @@ _.extend(ViewModel.prototype, {
         var error = Expression.validate(koExpr.body(), this.inputCount());
         koExpr.error(error);
         $(event.target.parentNode).popover(error ? "show" : "hide");
+        this.graphVis.draw(this.generateGraphData());
     },
 
     functionSignature: function (index) {
         // TODO: limit number of nodes in input layer
-        var intputLayer = this.network.layers[0];
         var symbols = _.take(Expression.symbols, this.inputCount());
-        return "f<sub>" + (index + 1) + "</sub>(" + symbols.join(", ") + ") =";
+        return "F" + (index + 1) + "(" + symbols.join(", ") + ") =";
     },
 
     generateGraphData: function () {
-        // TODO: sample expressions
-        // TODO: sample ann outputs
-        //*/
-        return [[[
-            [0, 0.2, 0.4, 0.6, 0.8, 1],
-            [0, 0.05, 0.1, 0.2, 0.9, 1],
-            [0, 0.2, 0.4, 0.6, 0.8, 1]
-        ]]];
         /*/
-        return [[
-                [[0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.1, 0.3, 0.7, 0.9, 1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-                [[0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.1, 0.3, 0.7, 0.9, 1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-                [[0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.1, 0.3, 0.7, 0.9, 1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-            ], [
-                [[0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.1, 0.3, 0.7, 0.9, 1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-                [[0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.1, 0.3, 0.7, 0.9, 1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-                [[0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0.1, 0.3, 0.7, 0.9, 1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-            ]];
+        return [[{
+            sample: [0, 0.2, 0.4, 0.6, 0.8, 1],
+            actual: [0, 0.05, 0.1, 0.2, 0.9, 1],
+            estimated: [0, 0.2, 0.4, 0.6, 0.8, 1],
+        }]];
+        /*/
+        var self = this;
+        var symbolCount = this.inputCount();
+        var symbols = _.take(Expression.symbols, symbolCount);
+
+        return _.map(this.expressions(), function (koExpr, exprIndex) {
+            var expr = koExpr.body();
+
+            if (!expr || Expression.validate(expr, symbolCount)) {
+                return _.map(symbols, _.constant({
+                    sample: [],
+                    actual: [],
+                    estimates: [],
+                }));
+            }
+            var code = math.compile(expr);
+
+            return _.map(symbols, function (symbol, symbolIndex) {
+                var symbolValues = _.map(symbols, _.constant(0));
+                var sampleRange = _.range(0, 1.05, 0.1);
+                return {
+                    sample: sampleRange,
+                    actual: _.map(sampleRange, function (x) { 
+                        symbolValues[symbolIndex] = x;
+                        return Expression.evaluate(expr, symbolValues, code);
+                    }),
+                    estimates: _.map(sampleRange, function (x) { 
+                        symbolValues[symbolIndex] = x;
+                        return self.network.process(symbolValues)[exprIndex];
+                    }),
+                };
+            });
+        });
         //*/
     },
 

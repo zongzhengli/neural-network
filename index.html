@@ -32,7 +32,7 @@
                  data-trigger="manual"
                  data-bind="attr: { 'data-content': error }">
 
-                <span class="input-group-addon" data-bind="html: $root.functionSignature($index())"></span>
+                <span class="input-group-addon" data-bind="text: $root.functionSignature($index())"></span>
                 <input class="form-control" type="text"
                        data-bind="value: body, 
                                   event: { change: $root.onChangeExpression.bind($root) }">

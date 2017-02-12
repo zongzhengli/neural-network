@@ -148,7 +148,7 @@ _.extend(NetworkVis.prototype, {
                     .attr("cy", nodeY);
 
                 var text =
-                    !layer.successor()   ? "f" + (nodeIndex + 1) :
+                    !layer.successor()   ? "F" + (nodeIndex + 1) :
                     !layer.predecessor() ? Expression.symbols[nodeIndex] :
                                            "";
 
@@ -204,6 +204,11 @@ _.extend(GraphVis.prototype, {
     draw: function (dataForOutputs) {
         var self = this;
         var svg = d3.select("svg.graph");
+        var xScale = self.plotXScale(dataForOutputs);
+        var yScale = self.plotYScale(dataForOutputs);
+        var plotLength = self.plotLength(dataForOutputs);
+        var trans = d3.transition()
+            .duration(1000);
 
         var outputGroups = svg.selectAll("g.output")
             .data(dataForOutputs);
@@ -215,6 +220,25 @@ _.extend(GraphVis.prototype, {
             .each(function (dataForInputs, outputIndex) {
                 var outputGroup = d3.select(this);
 
+                var outputTextX = xScale(0) - 12;
+                var outputTextY = yScale(outputIndex + 0.5);
+
+                var outputText = outputGroup.select("text.output");
+                if (outputText.empty()) {
+                    outputText = outputGroup.append("text")
+                        .classed("output", true)
+                        .attr("opacity", 0)
+                        .text("F" + (outputIndex + 1))
+                        .attr("dy", 3)
+                        .attr("x", outputTextX)
+                        .attr("y", outputTextY);
+                }
+                outputText.raise()
+                    .transition(trans)
+                    .attr("opacity", 1)
+                    .attr("x", outputTextX)
+                    .attr("y", outputTextY);
+
                 var inputGroups = outputGroup.selectAll("g.input")
                     .data(dataForInputs);
                 inputGroups.enter().append("g")
@@ -224,22 +248,40 @@ _.extend(GraphVis.prototype, {
                 outputGroup.selectAll("g.input")
                     .each(function (dataForPlots, inputIndex) {
                         var inputGroup = d3.select(this);
-                        self.drawSinglePlot(dataForOutputs, dataForPlots, inputIndex, inputGroup, outputIndex);
+                        var plotId = outputIndex + "-" + inputIndex;
+                        var plotX = xScale(inputIndex);
+                        var plotY = yScale(outputIndex);
+
+                        self.drawSinglePlot(svg, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans);
+
+                        if (outputIndex === 0) {
+                            var inputTextX = xScale(inputIndex + 0.5);
+                            var inputTextY = yScale(dataForOutputs.length) + 5;
+
+                            var inputText = inputGroup.select("text.input");
+                            if (inputText.empty()) {
+                                inputText = inputGroup.append("text")
+                                    .classed("input", true)
+                                    .attr("opacity", 0)
+                                    .text(Expression.symbols[inputIndex])
+                                    .attr("dy", 3)
+                                    .attr("x", inputTextX)
+                                    .attr("y", inputTextY);
+                            }
+                            inputText.raise()
+                                .transition(trans)
+                                .attr("opacity", 1)
+                                .attr("x", inputTextX)
+                                .attr("y", inputTextY);
+                        }
                     });
             });
     },
 
-    drawSinglePlot: function (dataForOutputs, dataForPlots, inputIndex, inputGroup, outputIndex) {
+    drawSinglePlot: function (svg, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans) {
         var self = this;
-        var xScale = self.plotXScale(dataForOutputs);
-        var yScale = self.plotYScale(dataForOutputs);
-        var plotX = xScale(inputIndex);
-        var plotY = yScale(outputIndex);
-        var plotLength = self.plotLength(dataForOutputs);
         var plotWidth = 0.9 * plotLength;
         var plotHeight = 0.9 * plotLength;
-        var trans = d3.transition()
-            .duration(1000);
 
         var plotRect = inputGroup.select("rect.plot");
         if (plotRect.empty()) {
@@ -258,25 +300,50 @@ _.extend(GraphVis.prototype, {
             .attr("width", plotWidth)
             .attr("height", plotHeight);
 
+        var svgDefs = svg.select("defs");
+        if (svgDefs.empty()) {
+            svgDefs = svg.append("defs");
+        }
+
+        var clipPathUrl = "plot-clip-path-" + plotId;
+        var clipPath = svgDefs.select("#" + clipPathUrl);
+        if (clipPath.empty()) {
+            clipPath = svgDefs.append("clipPath")
+                .attr("id", clipPathUrl);
+        }
+
+        var clipPathRect = clipPath.select("rect");
+        if (clipPathRect.empty()) {
+            clipPathRect = clipPath.append("rect")
+                .attr("x", plotX)
+                .attr("y", plotY)
+                .attr("width", plotWidth)
+                .attr("height", plotHeight);
+        }
+        clipPathRect.transition(trans)
+            .attr("x", plotX)
+            .attr("y", plotY)
+            .attr("width", plotWidth)
+            .attr("height", plotHeight);
+
+        var yMedian = dataForPlots.actual[Math.floor(dataForPlots.actual.length / 2)];
         var xScale = d3.scaleLinear()
             .domain([0, 1])
             .range([plotX, plotX + plotWidth]);
         var yScale = d3.scaleLinear()
-            .domain([0, 1])
+            .domain([yMedian - 0.5, yMedian + 0.5])
             .range([plotY + plotHeight, plotY]);
-        var xValues = dataForPlots[0];
+        var xValues = dataForPlots.sample;
 
         var plotGroups = inputGroup.selectAll("g.plot")
-            .data(dataForPlots);
+            .data([dataForPlots.actual, dataForPlots.estimates]);
         plotGroups.enter().append("g")
-            .classed("plot", true);
+            .classed("plot", true)
+            .attr("clip-path", "url(#" + clipPathUrl + ")");
         plotGroups.exit().remove();
 
         inputGroup.selectAll("g.plot")
             .each(function (data, plotIndex) {
-                if (plotIndex === 0) {
-                    return;
-                }
                 var plotGroup = d3.select(this);
 
                 var plotPaths = plotGroup.selectAll("path.plot")
@@ -294,17 +361,17 @@ _.extend(GraphVis.prototype, {
                         var x2 = xValues[i + 1];
                         var y2 = data[i + 1];
 
-                        var edgePath = d3.path();
-                        edgePath.moveTo(xScale(x1), yScale(y1));
-                        edgePath.lineTo(xScale(x2), yScale(y2));
-                        edgePath.closePath();
+                        var plotPath = d3.path();
+                        plotPath.moveTo(xScale(x1), yScale(y1));
+                        plotPath.lineTo(xScale(x2), yScale(y2));
+                        plotPath.closePath();
 
                         d3.select(this)
-                            .classed("actual", plotIndex === 1)
-                            .classed("sample", plotIndex === 2)
+                            .classed("actual", plotIndex === 0)
+                            .classed("estimated", plotIndex === 1)
                             .transition(trans)
                             .attr("opacity", 1)
-                            .attr("d", edgePath.toString());
+                            .attr("d", plotPath.toString());
                     });
             });
     },

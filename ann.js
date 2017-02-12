@@ -61,6 +61,7 @@ _.extend(Layer.prototype, {
 
 function Network() {
     this.layers = [new Layer(this, 0), new Layer(this, 1)];
+    this.trained = false;
 }
 
 _.extend(Network.prototype, {
@@ -70,9 +71,27 @@ _.extend(Network.prototype, {
         return layer;
     },
 
+    inputLayer: function () {
+        return this.layers[0];
+    },
+
+    outputLayer: function () {
+        return this.layers[this.layers.length - 1];
+    },
+
     randomizeWeights: function () {
         for (layer of this.layers) {
             layer.randomizeWeights();
         }
+    },
+
+    train: function (data) {
+        // TODO
+        this.trained = true;
+    },
+
+    process: function (data) {
+        // TODO
+        return _.map(this.outputLayer().nodes, Math.random);
     },
 });

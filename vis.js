@@ -335,11 +335,13 @@ _.extend(GraphVis.prototype, {
                 .attr("clip-path", "url(#" + clipPathUrl + ")");
         }
 
+        var domain = [_.first(dataForPlots.domain), _.last(dataForPlots.domain)];
+        var domainWidth = domain[1] - domain[0];
         var xScale = d3.scaleLinear()
-            .domain([0, 1])
+            .domain(domain)
             .range([plotX, plotX + plotWidth]);
         var yScale = d3.scaleLinear()
-            .domain([dataForPlots.median - 0.5, dataForPlots.median + 0.5])
+            .domain([dataForPlots.median - domainWidth / 2, dataForPlots.median + domainWidth / 2])
             .range([plotY + plotHeight, plotY]);
 
         var plotPaths = plotGroup.selectAll("path.plot")
@@ -356,6 +358,14 @@ _.extend(GraphVis.prototype, {
                 var x1 = dataForPlots.domain[i];
                 var x2 = dataForPlots.domain[i + 1];
                 var y2 = dataForPlots.range[i + 1];
+
+                if (x1 === undefined || x2 === undefined || y1 === undefined || y2 === undefined ||
+                    math.distance([x1, y1], [x2, y2]) > domainWidth) {
+
+                    d3.select(this)
+                        .attr("opacity", 0)
+                    return;
+                }
 
                 var plotPath = d3.path();
                 plotPath.moveTo(xScale(x1), yScale(y1));

@@ -92,20 +92,36 @@ _.extend(ViewModel.prototype, {
 
             return _.map(symbols, function (symbol, symbolIndex) {
                 var symbolValues = _.map(symbols, _.constant(1));
-                var domain = _.range(0, 1.05, 0.1);
+                var domainStart = -5;
+                symbolValues[symbolIndex] = domainStart;
+                if (!Expression.evaluate(expr, symbolValues, code)) {
+                    domainStart = 0.1;
+                }
+                var domain = _.range(domainStart, domainStart + 10.1, 0.2);
                 return {
                     domain: domain,
                     range: _.map(domain, function (x) {
                         symbolValues[symbolIndex] = x;
                         return rangeFunc(expr, exprIndex, symbolValues, code);
                     }),
-                    median: (function () { 
-                        symbolValues[symbolIndex] = 0.5;
-                        return Expression.evaluate(expr, symbolValues, code); 
-                    })(),
+                    median: self.pickMedian(expr, domainStart, symbolIndex, symbolValues, code),
                 };
             });
         });
+    },
+
+    pickMedian: function (expr, domainStart, symbolIndex, symbolValues, code) {
+        symbolValues[symbolIndex] = domainStart + 5;
+        var v1 = Expression.evaluate(expr, symbolValues, code);
+        if (v1 !== undefined) {
+            return v1;
+        }
+
+        symbolValues[symbolIndex] = domainStart;
+        var v2 = Expression.evaluate(expr, symbolValues, code);
+        symbolValues[symbolIndex] = domainStart + 10;
+        var v3 = Expression.evaluate(expr, symbolValues, code);
+        return (v2 + v3) / 2;
     },
 
     drawActualPlots: function () {

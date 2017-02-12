@@ -18,6 +18,7 @@ var Expression = {
             .map(function (symbol, i) { return [symbol, values[i]]; })
             .fromPairs()
             .value();
-        return code.eval(scope);
+        var value = code.eval(scope);
+        return isFinite(value) ? value : undefined;
     },
 };

@@ -12,7 +12,7 @@ $(function() {
     
     $(".popover").popover();
 
-    var app = new ViewModel();
-    app.draw();
+    app = new ViewModel();
+    app.drawAll();
     ko.applyBindings(app);
 });

@@ -40,7 +40,8 @@ _.extend(ViewModel.prototype, {
                 error: ko.observable(""),
             });
         }
-        this.graphVis.draw(this.generateGraphData());
+
+        $("input.expression").change();
     },
 
     onChangeExpression: function (koExpr, event) {
@@ -48,7 +49,7 @@ _.extend(ViewModel.prototype, {
         var error = Expression.validate(koExpr.body(), this.inputCount());
         koExpr.error(error);
         $(event.target.parentNode).popover(error ? "show" : "hide");
-        this.graphVis.draw(this.generateGraphData());
+        this.drawActualPlots();
     },
 
     functionSignature: function (index) {
@@ -57,7 +58,22 @@ _.extend(ViewModel.prototype, {
         return "F" + (index + 1) + "(" + symbols.join(", ") + ") =";
     },
 
-    generateGraphData: function () {
+    actualData: function () {
+        var rangeFunc = function (expr, exprIndex, symbolValues, code) {
+            return Expression.evaluate(expr, symbolValues, code);
+        };
+        return this.implData(rangeFunc);
+    },
+
+    estimatedData: function () {
+        var self = this;
+        var rangeFunc = function (expr, exprIndex, symbolValues, code) {
+            return self.network.process(symbolValues)[exprIndex];
+        };
+        return this.implData(rangeFunc);
+    },
+
+    implData: function (rangeFunc) {
         var self = this;
         var symbolCount = this.inputCount();
         var symbols = _.take(Expression.symbols, symbolCount);
@@ -67,34 +83,46 @@ _.extend(ViewModel.prototype, {
 
             if (!expr || Expression.validate(expr, symbolCount)) {
                 return _.map(symbols, _.constant({
-                    sample: [],
-                    actual: [],
-                    estimates: [],
+                    domain: [],
+                    range: [],
+                    median: 0,
                 }));
             }
             var code = math.compile(expr);
 
             return _.map(symbols, function (symbol, symbolIndex) {
-                var symbolValues = _.map(symbols, _.constant(0));
-                var sampleRange = _.range(0, 1.05, 0.1);
+                var symbolValues = _.map(symbols, _.constant(1));
+                var domain = _.range(0, 1.05, 0.1);
                 return {
-                    sample: sampleRange,
-                    actual: _.map(sampleRange, function (x) { 
+                    domain: domain,
+                    range: _.map(domain, function (x) {
                         symbolValues[symbolIndex] = x;
-                        return Expression.evaluate(expr, symbolValues, code);
+                        return rangeFunc(expr, exprIndex, symbolValues, code);
                     }),
-                    estimates: _.map(sampleRange, function (x) { 
-                        symbolValues[symbolIndex] = x;
-                        return self.network.process(symbolValues)[exprIndex];
-                    }),
+                    median: (function () { 
+                        symbolValues[symbolIndex] = 0.5;
+                        return Expression.evaluate(expr, symbolValues, code); 
+                    })(),
                 };
             });
         });
-        //*/
     },
 
-    draw: function () {
-        this.graphVis.draw(this.generateGraphData());
+    drawActualPlots: function () {
+        this.graphVis.draw(this.actualData(), PlotType.Actual);
+    },
+
+    drawEstimatedPlots: function () {
+        this.graphVis.draw(this.estimatedData(), PlotType.Estimated);
+    },
+
+    drawNetwork: function () {
         this.networkVis.draw();
+    },
+
+    drawAll: function () {
+        this.drawActualPlots();
+        this.drawEstimatedPlots();
+        this.drawNetwork();
     },
 });

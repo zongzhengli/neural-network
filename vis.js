@@ -173,6 +173,8 @@ _.extend(NetworkVis.prototype, {
     },
 });
 
+var PlotType = { Actual: 0, Estimated: 1 };
+
 function GraphVis() {
     this.svgW = 400;
     this.svgH = 300;
@@ -201,7 +203,7 @@ _.extend(GraphVis.prototype, {
             .range([centerY - halfHeight, centerY + halfHeight]);
     },
 
-    draw: function (dataForOutputs) {
+    draw: function (dataForOutputs, plotType) {
         var self = this;
         var svg = d3.select("svg.graph");
         var xScale = self.plotXScale(dataForOutputs);
@@ -252,7 +254,7 @@ _.extend(GraphVis.prototype, {
                         var plotX = xScale(inputIndex);
                         var plotY = yScale(outputIndex);
 
-                        self.drawSinglePlot(svg, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans);
+                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans);
 
                         if (outputIndex === 0) {
                             var inputTextX = xScale(inputIndex + 0.5);
@@ -278,7 +280,7 @@ _.extend(GraphVis.prototype, {
             });
     },
 
-    drawSinglePlot: function (svg, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans) {
+    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans) {
         var self = this;
         var plotWidth = 0.9 * plotLength;
         var plotHeight = 0.9 * plotLength;
@@ -326,53 +328,46 @@ _.extend(GraphVis.prototype, {
             .attr("width", plotWidth)
             .attr("height", plotHeight);
 
-        var yMedian = dataForPlots.actual[Math.floor(dataForPlots.actual.length / 2)];
+        var plotGroup = inputGroup.select("g.plot-" + plotType);
+        if (plotGroup.empty()) {
+            plotGroup = inputGroup.append("g")
+                .classed("plot-" + plotType, true)
+                .attr("clip-path", "url(#" + clipPathUrl + ")");
+        }
+
         var xScale = d3.scaleLinear()
             .domain([0, 1])
             .range([plotX, plotX + plotWidth]);
         var yScale = d3.scaleLinear()
-            .domain([yMedian - 0.5, yMedian + 0.5])
+            .domain([dataForPlots.median - 0.5, dataForPlots.median + 0.5])
             .range([plotY + plotHeight, plotY]);
-        var xValues = dataForPlots.sample;
 
-        var plotGroups = inputGroup.selectAll("g.plot")
-            .data([dataForPlots.actual, dataForPlots.estimates]);
-        plotGroups.enter().append("g")
-            .classed("plot", true)
-            .attr("clip-path", "url(#" + clipPathUrl + ")");
-        plotGroups.exit().remove();
+        var plotPaths = plotGroup.selectAll("path.plot")
+            .data(dataForPlots.range);
+        plotPaths.enter().append("path")
+            .classed("plot", true);
+        plotPaths.exit().remove();
 
-        inputGroup.selectAll("g.plot")
-            .each(function (data, plotIndex) {
-                var plotGroup = d3.select(this);
+        plotGroup.selectAll("path.plot")
+            .each(function (y1, i) {
+                if (i === dataForPlots.range.length - 1) {
+                    return;
+                }
+                var x1 = dataForPlots.domain[i];
+                var x2 = dataForPlots.domain[i + 1];
+                var y2 = dataForPlots.range[i + 1];
 
-                var plotPaths = plotGroup.selectAll("path.plot")
-                    .data(data);
-                plotPaths.enter().append("path")
-                    .classed("plot", true);
-                plotPaths.exit().remove(); 
+                var plotPath = d3.path();
+                plotPath.moveTo(xScale(x1), yScale(y1));
+                plotPath.lineTo(xScale(x2), yScale(y2));
+                plotPath.closePath();
 
-                plotGroup.selectAll("path.plot")
-                    .each(function (y1, i) {
-                        if (i === data.length - 1) {
-                            return;
-                        }
-                        var x1 = xValues[i];
-                        var x2 = xValues[i + 1];
-                        var y2 = data[i + 1];
-
-                        var plotPath = d3.path();
-                        plotPath.moveTo(xScale(x1), yScale(y1));
-                        plotPath.lineTo(xScale(x2), yScale(y2));
-                        plotPath.closePath();
-
-                        d3.select(this)
-                            .classed("actual", plotIndex === 0)
-                            .classed("estimated", plotIndex === 1)
-                            .transition(trans)
-                            .attr("opacity", 1)
-                            .attr("d", plotPath.toString());
-                    });
+                d3.select(this)
+                    .classed("actual", plotType === PlotType.Actual)
+                    .classed("estimated", plotType === PlotType.Estimated)
+                    .transition(trans)
+                    .attr("opacity", 1)
+                    .attr("d", plotPath.toString());
             });
     },
 });

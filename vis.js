@@ -173,7 +173,7 @@ _.extend(NetworkVis.prototype, {
     },
 });
 
-var PlotType = { Actual: 0, Estimated: 1 };
+var PlotType = { Actual: "actual", Estimated: "estimated" };
 
 function GraphVis() {
     this.svgW = 400;
@@ -250,11 +250,10 @@ _.extend(GraphVis.prototype, {
                 outputGroup.selectAll("g.input")
                     .each(function (dataForPlots, inputIndex) {
                         var inputGroup = d3.select(this);
-                        var plotId = outputIndex + "-" + inputIndex;
                         var plotX = xScale(inputIndex);
                         var plotY = yScale(outputIndex);
 
-                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans);
+                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, trans);
 
                         if (outputIndex === 0) {
                             var inputTextX = xScale(inputIndex + 0.5);
@@ -280,10 +279,11 @@ _.extend(GraphVis.prototype, {
             });
     },
 
-    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotId, plotX, plotY, plotLength, trans) {
+    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, trans) {
         var self = this;
         var plotWidth = 0.9 * plotLength;
         var plotHeight = 0.9 * plotLength;
+        var plotTransform = "translate(" + plotX + ", " + plotY + ")";
 
         var plotRect = inputGroup.select("rect.plot");
         if (plotRect.empty()) {
@@ -307,7 +307,7 @@ _.extend(GraphVis.prototype, {
             svgDefs = svg.append("defs");
         }
 
-        var clipPathUrl = "plot-clip-path-" + plotId;
+        var clipPathUrl = "plot-clip-path";
         var clipPath = svgDefs.select("#" + clipPathUrl);
         if (clipPath.empty()) {
             clipPath = svgDefs.append("clipPath")
@@ -317,14 +317,12 @@ _.extend(GraphVis.prototype, {
         var clipPathRect = clipPath.select("rect");
         if (clipPathRect.empty()) {
             clipPathRect = clipPath.append("rect")
-                .attr("x", plotX)
-                .attr("y", plotY)
+                .attr("x", 0)
+                .attr("y", 0)
                 .attr("width", plotWidth)
                 .attr("height", plotHeight);
         }
         clipPathRect.transition(trans)
-            .attr("x", plotX)
-            .attr("y", plotY)
             .attr("width", plotWidth)
             .attr("height", plotHeight);
 
@@ -332,17 +330,20 @@ _.extend(GraphVis.prototype, {
         if (plotGroup.empty()) {
             plotGroup = inputGroup.append("g")
                 .classed("plot-" + plotType, true)
-                .attr("clip-path", "url(#" + clipPathUrl + ")");
+                .attr("clip-path", "url(#" + clipPathUrl + ")")
+                .attr("transform", plotTransform);
         }
+        plotGroup.transition(trans)
+            .attr("transform", plotTransform)
 
         var domain = [_.first(dataForPlots.domain), _.last(dataForPlots.domain)];
         var domainWidth = domain[1] - domain[0];
         var xScale = d3.scaleLinear()
             .domain(domain)
-            .range([plotX, plotX + plotWidth]);
+            .range([0, plotWidth]);
         var yScale = d3.scaleLinear()
             .domain([dataForPlots.median - domainWidth / 2, dataForPlots.median + domainWidth / 2])
-            .range([plotY + plotHeight, plotY]);
+            .range([plotHeight, 0]);
 
         var plotPaths = plotGroup.selectAll("path.plot")
             .data(dataForPlots.range);
@@ -352,9 +353,6 @@ _.extend(GraphVis.prototype, {
 
         plotGroup.selectAll("path.plot")
             .each(function (y1, i) {
-                if (i === dataForPlots.range.length - 1) {
-                    return;
-                }
                 var x1 = dataForPlots.domain[i];
                 var x2 = dataForPlots.domain[i + 1];
                 var y2 = dataForPlots.range[i + 1];
@@ -362,8 +360,7 @@ _.extend(GraphVis.prototype, {
                 if (x1 === undefined || x2 === undefined || y1 === undefined || y2 === undefined ||
                     math.distance([x1, y1], [x2, y2]) > domainWidth) {
 
-                    d3.select(this)
-                        .attr("opacity", 0)
+                    d3.select(this).attr("opacity", 0);
                     return;
                 }
 
@@ -373,8 +370,7 @@ _.extend(GraphVis.prototype, {
                 plotPath.closePath();
 
                 d3.select(this)
-                    .classed("actual", plotType === PlotType.Actual)
-                    .classed("estimated", plotType === PlotType.Estimated)
+                    .classed(plotType, true)
                     .transition(trans)
                     .attr("opacity", 1)
                     .attr("d", plotPath.toString());

@@ -1,5 +1,5 @@
 var Expression = {
-    symbols: ["x", "y", "z", "u", "v", "w"],
+    symbols: ["x", "y", "z", "w", "v", "u", "t", "r", "p", "q"],
 
     validate: function (expr, varCount) {
         var parser = math.parser();
@@ -8,7 +8,7 @@ var Expression = {
         } catch (e) {
             return e.message;
         }
-        return null;
+        return undefined;
     },
 
     evaluate: function (expr, values, code) {

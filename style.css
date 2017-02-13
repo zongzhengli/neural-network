@@ -6,11 +6,11 @@ div.right {
     min-height: 100vh;
 }
 div.bottom {
-    padding-bottom: 40px;
+    padding-bottom: 80px;
 }
 
 svg.network {
-
+    max-height: calc(100vh - 10px);
 }
 circle.node {
     fill: purple;

@@ -15,7 +15,7 @@ _.extend(NetworkVis.prototype, {
     nodeYScale: function (layer) {
         return d3.scaleLinear()
             .domain([-0.5, layer.nodes.length - 0.5])
-            .range([0.1 * this.svgH, 0.95 * this.svgH]);
+            .range([0.1 * this.svgH, 0.9 * this.svgH]);
     },
 
     draw: function () {

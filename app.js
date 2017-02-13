@@ -93,11 +93,13 @@ _.extend(ViewModel.prototype, {
             return _.map(symbols, function (symbol, symbolIndex) {
                 var symbolValues = _.map(symbols, _.constant(1));
                 var domainStart = -5;
+
                 symbolValues[symbolIndex] = domainStart;
                 if (!Expression.evaluate(expr, symbolValues, code)) {
                     domainStart = 0.1;
                 }
                 var domain = _.range(domainStart, domainStart + 10.1, 0.2);
+
                 return {
                     domain: domain,
                     range: _.map(domain, function (x) {

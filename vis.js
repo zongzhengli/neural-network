@@ -41,26 +41,37 @@ _.extend(NetworkVis.prototype, {
         var plusThickness = 1;
         var plusLargeLength = 13;
         var plusLargeThickness = 1.3;
+        var enabled = function () {
+            return layer.nodes.length < Expression.symbols.length
+        };
+        var onClick = function () {
+            if (!enabled()) {
+                onMouseOut();
+                return;
+            }
+            layer.addNode();
+            self.draw();
+            self.listener();
+            onMouseOver();
+        };
+        var onMouseOver = function () {
+            drawRect("horizontal", plusLargeLength, plusLargeThickness);
+            drawRect("vertical", plusLargeThickness, plusLargeLength);
+        };
+        var onMouseOut = function () {
+            drawRect("horizontal", plusLength, plusThickness);
+            drawRect("vertical", plusThickness, plusLength);
+        }
 
-        drawRect("horizontal", plusLength, plusThickness);
-        drawRect("vertical", plusThickness, plusLength);
+        drawRect("horizontal", plusLength, plusThickness)
+            .attr("opacity", enabled() ? 1 : 0);
+        drawRect("vertical", plusThickness, plusLength)
+            .attr("opacity", enabled() ? 1 : 0);
         drawRect("bg", plusLargeLength, plusLargeLength)
             .attr("opacity", 0)
-            .on("click", function () {
-                layer.addNode();
-                self.draw();
-                self.listener();
-            })
-            .on("mouseover", function () {
-                drawRect("horizontal", plusLargeLength, plusLargeThickness);
-                drawRect("vertical", plusLargeThickness, plusLargeLength);
-                $(document.body).css("cursor", "pointer");
-            })
-            .on("mouseout", function () {
-                drawRect("horizontal", plusLength, plusThickness);
-                drawRect("vertical", plusThickness, plusLength);
-                $(document.body).css("cursor", "default");
-            });
+            .on("click", onClick)
+            .on("mouseover", onMouseOver)
+            .on("mouseout", onMouseOut);
 
         function drawRect(rectClass, w, h) {
             var xScale = self.nodeXScale();
@@ -336,13 +347,20 @@ _.extend(GraphVis.prototype, {
         plotGroup.transition(trans)
             .attr("transform", plotTransform)
 
-        var domain = [_.first(dataForPlots.domain), _.last(dataForPlots.domain)];
-        var domainWidth = domain[1] - domain[0];
+        var domainInterval = [
+            _.first(dataForPlots.domain),
+            _.last(dataForPlots.domain),
+        ];
+        var domainWidth = domainInterval[1] - domainInterval[0];
+        var rangeInterval = [
+            dataForPlots.median - domainWidth / 2, 
+            dataForPlots.median + domainWidth / 2,
+        ];
         var xScale = d3.scaleLinear()
-            .domain(domain)
+            .domain(domainInterval)
             .range([0, plotWidth]);
         var yScale = d3.scaleLinear()
-            .domain([dataForPlots.median - domainWidth / 2, dataForPlots.median + domainWidth / 2])
+            .domain(rangeInterval)
             .range([plotHeight, 0]);
 
         var plotPaths = plotGroup.selectAll("path.plot")
@@ -357,9 +375,10 @@ _.extend(GraphVis.prototype, {
                 var x2 = dataForPlots.domain[i + 1];
                 var y2 = dataForPlots.range[i + 1];
 
-                if (x1 === undefined || x2 === undefined || y1 === undefined || y2 === undefined ||
-                    math.distance([x1, y1], [x2, y2]) > domainWidth) {
-
+                if (x1 === undefined || x2 === undefined || 
+                    y1 === undefined || y2 === undefined ||
+                    math.distance([x1, y1], [x2, y2]) > domainWidth
+                ) {
                     d3.select(this).attr("opacity", 0);
                     return;
                 }

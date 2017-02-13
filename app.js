@@ -1,21 +1,5 @@
 function ViewModel() {
     this.network = new Network();
-    /*/
-    this.network.addLayer();
-    this.network.layers[1].addNode();
-    this.network.layers[0].addNode();
-    //*/
-    /*/
-    this.network.layers[0].addNode();
-    this.network.layers[0].addNode();
-    this.network.layers[1].addNode();
-    this.network.layers[1].addNode();
-    this.network.layers[1].addNode();
-    this.network.layers[1].addNode();
-    this.network.layers[1].addNode();
-    this.network.layers[2].addNode();
-    this.network.addLayer();
-    //*/
     this.networkVis = new NetworkVis(this.network, this.onChangeNetwork.bind(this));
     this.graphVis = new GraphVis();
 

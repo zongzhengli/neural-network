@@ -32,13 +32,12 @@ _.extend(NetworkVis.prototype, {
             .each(function (layer, reversedIndex) {
                 var layerIndex = self.network.layers.length - reversedIndex - 1;
                 var layerGroup = d3.select(this);
-                self.drawMinusButton(layer, layerIndex, layerGroup);
-                self.drawPlusButton(layer, layerIndex, layerGroup);
+                self.drawNodeButtons(layer, layerIndex, layerGroup);
                 self.drawNodeGroup(layer, layerIndex, layerGroup);
             });
     },
 
-    drawMinusButton: function (layer, layerIndex, layerGroup) {
+    drawNodeButtons: function (layer, layerIndex, layerGroup) {
         var self = this;
         var length = 10;
         var thickness = 1;
@@ -46,47 +45,16 @@ _.extend(NetworkVis.prototype, {
         var largeThickness = 1.5;
         var xScale = self.nodeXScale();
         var yScale = self.nodeYScale(layer);
-        var x = xScale(layerIndex);
-        var y = yScale(layer.nodes.length - 1) + 45;
+        var plusX = xScale(layerIndex);
+        var plusY = yScale(layer.nodes.length - 1) + 25;
 
-        var enabled = function () {
-            return layer.nodes.length > 1;
-        };
-
-        self.drawRect(layerGroup, "minus-h", x, y, length, thickness, enabled())
-        self.drawRect(layerGroup, "minus-bg", x, y, largeLength, largeLength, enabled())
-            .attr("opacity", 0)
-            .on("click", function () {
-                layer.removeNode();
-                self.draw();
-                self.listener();
-            })
-            .on("mouseover", function () {
-                self.drawRect(layerGroup, "minus-h", x, y, largeLength, largeThickness, enabled());
-            })
-            .on("mouseout", function () {
-                self.drawRect(layerGroup, "minus-h", x, y, length, thickness, enabled());
-            });
-    },
-
-    drawPlusButton: function (layer, layerIndex, layerGroup) {
-        var self = this;
-        var length = 10;
-        var thickness = 1;
-        var largeLength = 15;
-        var largeThickness = 1.5;
-        var xScale = self.nodeXScale();
-        var yScale = self.nodeYScale(layer);
-        var x = xScale(layerIndex);
-        var y = yScale(layer.nodes.length - 1) + 25;
-
-        var enabled = function () {
+        var plusEnabled = function () {
             return layer.nodes.length < Expression.symbols.length;
         };
 
-        self.drawRect(layerGroup, "plus-h", x, y, length, thickness, enabled())
-        self.drawRect(layerGroup, "plus-v", x, y, thickness, length, enabled())
-        self.drawRect(layerGroup, "plus-bg", x, y, largeLength, largeLength, enabled())
+        self.drawRect(layerGroup, "plus-h", plusX, plusY, length, thickness, plusEnabled())
+        self.drawRect(layerGroup, "plus-v", plusX, plusY, thickness, length, plusEnabled())
+        self.drawRect(layerGroup, "plus-bg", plusX, plusY, largeLength, largeLength, plusEnabled())
             .attr("opacity", 0)
             .on("click", function () {
                 layer.addNode();
@@ -94,12 +62,34 @@ _.extend(NetworkVis.prototype, {
                 self.listener();
             })
             .on("mouseover", function () {
-                self.drawRect(layerGroup, "plus-h", x, y, largeLength, largeThickness, enabled());
-                self.drawRect(layerGroup, "plus-v", x, y, largeThickness, largeLength, enabled());
+                self.drawRect(layerGroup, "plus-h", plusX, plusY, largeLength, largeThickness, plusEnabled());
+                self.drawRect(layerGroup, "plus-v", plusX, plusY, largeThickness, largeLength, plusEnabled());
             })
             .on("mouseout", function () {
-                self.drawRect(layerGroup, "plus-h", x, y, length, thickness, enabled());
-                self.drawRect(layerGroup, "plus-v", x, y, thickness, length, enabled());
+                self.drawRect(layerGroup, "plus-h", plusX, plusY, length, thickness, plusEnabled());
+                self.drawRect(layerGroup, "plus-v", plusX, plusY, thickness, length, plusEnabled());
+            });
+
+        var minusX = plusX;
+        var minusY = plusY + (plusEnabled() ? 20 : 0);
+
+        var minusEnabled = function () {
+            return layer.nodes.length > 1;
+        };
+
+        self.drawRect(layerGroup, "minus-h", minusX, minusY, length, thickness, minusEnabled())
+        self.drawRect(layerGroup, "minus-bg", minusX, minusY, largeLength, largeLength, minusEnabled())
+            .attr("opacity", 0)
+            .on("click", function () {
+                layer.removeNode();
+                self.draw();
+                self.listener();
+            })
+            .on("mouseover", function () {
+                self.drawRect(layerGroup, "minus-h", minusX, minusY, largeLength, largeThickness, minusEnabled());
+            })
+            .on("mouseout", function () {
+                self.drawRect(layerGroup, "minus-h", minusX, minusY, length, thickness, minusEnabled());
             });
     },
 

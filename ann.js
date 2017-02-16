@@ -9,7 +9,7 @@ function Node(layer, weightsLength) {
 }
 
 _.extend(Node.prototype, {
-    addSuccessor: function () {
+    addPredecessor: function () {
         this.weights.push(1);
     },
 
@@ -26,10 +26,10 @@ function Layer(network, index) {
 
 _.extend(Layer.prototype, {
     addNode: function () {
-        for (predNode of this.predecessorNodes()) {
-            predNode.addSuccessor();
+        for (predNode of this.successorNodes()) {
+            predNode.addPredecessor();
         }
-        var node = new Node(this, Math.max(1, this.successorNodes().length));
+        var node = new Node(this, Math.max(1, this.predecessorNodes().length));
         this.nodes.push(node);
         return node;
     },

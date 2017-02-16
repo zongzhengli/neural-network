@@ -1,6 +1,7 @@
-function Node(layer, weightsLength) {
+function Node(layer, predCount) {
     this.layer = layer;
-    this.weights = _.times(weightsLength, _.constant(1));
+    this.weights = undefined;
+    this.setPredecessorCount(predCount);
 
     if (typeof Node.counter === "undefined") {
         Node.counter = 0;
@@ -17,6 +18,10 @@ _.extend(Node.prototype, {
         this.weights.pop();
     },
 
+    setPredecessorCount: function (predCount) {
+        this.weights = _.times(predCount + 1, _.constant(1));
+    },
+
     randomizeWeights: function () {
         this.weights = _.map(this.weights, Math.random);
     }, 
@@ -24,7 +29,7 @@ _.extend(Node.prototype, {
 
 function Layer(network, index) {
     this.network = network;
-    this.nodes = [new Node(this, 1)];
+    this.nodes = [new Node(this, 0)];
     this.index = index;
 }
 
@@ -33,9 +38,9 @@ _.extend(Layer.prototype, {
         for (succNode of this.getSuccessorNodes()) {
             succNode.addPredecessor();
         }
-        var node = new Node(this, this.getPredecessorNodes().length + 1);
-        this.nodes.push(node);
-        return node;
+        var newNode = new Node(this, this.getPredecessorNodes().length);
+        this.nodes.push(newNode);
+        return newNode;
     },
 
     removeNode: function () {
@@ -90,13 +95,34 @@ function Network() {
 
 _.extend(Network.prototype, {
     addLayer: function () {
-        var layer = new Layer(this, this.layers.length);
-        this.layers.push(layer);
-        return layer;
+        var newLayer = new Layer(this, this.layers.length);
+        this.layers.splice(this.layers.length - 1, 0, newLayer);
+
+        _.each(this.layers, function (layer, index) {
+            layer.index = index;
+        });
+
+        var predNodeCount = newLayer.getPredecessorNodes().length;
+        for (node of newLayer.nodes) {
+            node.setPredecessorCount(predNodeCount);
+        }
+        for (outputNode of this.getOutputLayer().nodes) {
+            outputNode.setPredecessorCount(1);
+        }
+        return newLayer;
     },
 
     removeLayer: function () {
-        // TODO
+        var removedLayer = this.layers.splice(this.layers.length - 1, 1);
+
+        var outputLayer = this.getOutputLayer();
+        outputLayer.index = this.layers.length - 1;
+
+        var predNodeCount = outputLayer.getPredecessorNodes().length;
+        for (outputNode of outputLayer.nodes) {
+            outputNode.setPredecessorCount(predNodeCount);
+        }
+        return removedLayer;
     },
 
     getInputLayer: function () {

@@ -6,7 +6,7 @@ function NetworkVis(network, listener) {
 }
 
 _.extend(NetworkVis.prototype, {
-    getNodeXScale: function () {
+    getLayerXScale: function () {
         return d3.scaleLinear()
             .domain([-0.5, this.network.layers.length - 0.5])
             .range([0.05 * this.svgW, 0.95 * this.svgW]);
@@ -23,6 +23,8 @@ _.extend(NetworkVis.prototype, {
         var svg = d3.select("svg.network");
         var trans = d3.transition()
             .duration(1000);
+
+        self.drawLayerButtons(svg);
 
         var layerGroups = svg.selectAll("g.layer")
             .data(this.network.layers.slice().reverse());
@@ -44,7 +46,8 @@ _.extend(NetworkVis.prototype, {
 
     drawNodeGroup: function (layer, layerIndex, layerGroup) {
         var self = this;
-        var xScale = self.getNodeXScale();
+        var layerExiting = layer.index !== layerIndex;
+        var xScale = self.getLayerXScale();
         var yScale = self.getNodeYScale(layer);
         var trans = d3.transition()
             .duration(1000);
@@ -61,46 +64,45 @@ _.extend(NetworkVis.prototype, {
         layerGroup.selectAll("g.node")
             .each(function (node, nodeIndex) {
                 var nodeGroup = d3.select(this);
-                var nodeExiting = nodeIndex >= layer.nodes.length;
-                var nodeX = xScale(layerIndex);
-                var nodeY = yScale(nodeIndex - (nodeExiting ? 1 : 0));
+                var nodeExiting = nodeIndex >= layer.nodes.length || layerExiting;
+                var nodeX = xScale(layerIndex + (layerExiting ? 1 : 0));
+                var nodeY = yScale(Math.min(nodeIndex, layer.nodes.length - 1));
                 var opacity = nodeExiting ? 0 : 1;
 
-                var predLayer = layer.getPredecessor();
-                if (predLayer) {
-                    var predYScale = self.getNodeYScale(predLayer);
+                var predLayer = layer.getPredecessor() || layer;
+                var predLayerExiting = predLayer === layer;
+                var predYScale = self.getNodeYScale(predLayer);
 
-                    var edgePaths = nodeGroup.selectAll("path.edge")
-                        .data(node.weights);
-                    edgePaths.enter()
-                        .append("path")
-                        .classed("edge", true)
-                        .attr("opacity", 0);
-                    edgePaths.exit()
-                        .transition(trans)
-                        .remove();
+                var edgePaths = nodeGroup.selectAll("path.edge")
+                    .data(node.weights);
+                edgePaths.enter()
+                    .append("path")
+                    .classed("edge", true)
+                    .attr("opacity", 0);
+                edgePaths.exit()
+                    .transition(trans)
+                    .attr("opacity", 0)
+                    .remove();
 
-                    nodeGroup.selectAll("path.edge")
-                        .each(function (weight, weightIndex) {
-                            if (weightIndex === 0) {
-                                return;
-                            }
-                            var predNodeIndex = weightIndex - 1;
-                            var predNodeExiting = predNodeIndex >= predLayer.nodes.length;
-                            var predNodeX = xScale(layerIndex - 1);
-                            var predNodeY = predYScale(predNodeIndex - (predNodeExiting ? 1 : 0));
+                nodeGroup.selectAll("path.edge")
+                    .each(function (weight, weightIndex) {
+                        if (weightIndex === 0) {
+                            return;
+                        }
+                        var predNodeIndex = weightIndex - 1;
+                        var predNodeX = xScale(layerIndex - 1 + (predLayerExiting ? 1 : 0));
+                        var predNodeY = predYScale(Math.min(predNodeIndex, predLayer.nodes.length - 1));
 
-                            var edgePath = d3.path();
-                            edgePath.moveTo(predNodeX, predNodeY);
-                            edgePath.lineTo(nodeX, nodeY);
-                            edgePath.closePath();
+                        var edgePath = d3.path();
+                        edgePath.moveTo(predNodeX, predNodeY);
+                        edgePath.lineTo(nodeX, nodeY);
+                        edgePath.closePath();
 
-                            d3.select(this)
-                                .transition(trans)
-                                .attr("opacity", opacity)
-                                .attr("d", edgePath.toString());
-                        });
-                }
+                        d3.select(this)
+                            .transition(trans)
+                            .attr("opacity", opacity)
+                            .attr("d", edgePath.toString());
+                    });
 
                 var nodeCircle = nodeGroup.select("circle.node");
                 if (nodeCircle.empty()) {
@@ -121,23 +123,21 @@ _.extend(NetworkVis.prototype, {
                            layer.isInput()  ? Expression.symbols[nodeIndex] :
                                               "";
 
-                if (text) {
-                    var nodeText = nodeGroup.select("text.node");
-                    if (nodeText.empty()) {
-                        nodeText = nodeGroup.append("text")
-                            .classed("node", true)
-                            .attr("opacity", 0)
-                            .attr("dy", 3)
-                            .attr("x", nodeX)
-                            .attr("y", nodeY);
-                    }
-                    nodeText.raise()
-                        .transition(trans)
-                        .text(text)
-                        .attr("opacity", opacity)
+                var nodeText = nodeGroup.select("text.node");
+                if (nodeText.empty()) {
+                    nodeText = nodeGroup.append("text")
+                        .classed("node", true)
+                        .attr("opacity", 0)
+                        .attr("dy", 3)
                         .attr("x", nodeX)
                         .attr("y", nodeY);
                 }
+                nodeText.raise()
+                    .transition(trans)
+                    .text(text)
+                    .attr("opacity", opacity)
+                    .attr("x", nodeX)
+                    .attr("y", nodeY);
             });
     },
 
@@ -147,9 +147,10 @@ _.extend(NetworkVis.prototype, {
         var thickness = 1;
         var largeLength = 15;
         var largeThickness = 1.5;
-        var xScale = self.getNodeXScale();
+        var layerExiting = layer.index !== layerIndex;
+        var xScale = self.getLayerXScale();
         var yScale = self.getNodeYScale(layer);
-        var plusX = xScale(layerIndex);
+        var plusX = xScale(layerIndex + (layerExiting ? 1 : 0));
         var plusY = yScale(layer.nodes.length - 1) + 25;
 
         var plusEnabled = function () {
@@ -197,13 +198,68 @@ _.extend(NetworkVis.prototype, {
             });
     },
 
-    drawRect: function (layerGroup, rectClass, x, y, w, h, enabled) {
+    drawLayerButtons: function (svg) {
+        var self = this;
+        var length = 10;
+        var thickness = 1;
+        var largeLength = 15;
+        var largeThickness = 1.5;
+        var xScale = self.getLayerXScale();
+        var plusX = xScale(self.network.layers.length - 1) + 100;
+        var plusY = self.svgH / 2;
+
+        var plusEnabled = function () {
+            return self.network.layers.length < 10;
+        };
+
+        self.drawRect(svg, "plus-h", plusX, plusY, length, thickness, plusEnabled())
+        self.drawRect(svg, "plus-v", plusX, plusY, thickness, length, plusEnabled())
+        self.drawRect(svg, "plus-bg", plusX, plusY, largeLength, largeLength, plusEnabled())
+            .attr("opacity", 0)
+            .on("click", function () {
+                self.network.addLayer();
+                self.draw();
+                self.listener();
+            })
+            .on("mouseover", function () {
+                self.drawRect(svg, "plus-h", plusX, plusY, largeLength, largeThickness, plusEnabled());
+                self.drawRect(svg, "plus-v", plusX, plusY, largeThickness, largeLength, plusEnabled());
+            })
+            .on("mouseout", function () {
+                self.drawRect(svg, "plus-h", plusX, plusY, length, thickness, plusEnabled());
+                self.drawRect(svg, "plus-v", plusX, plusY, thickness, length, plusEnabled());
+            });
+
+        var minusX = plusX;
+        var minusY = plusY + (plusEnabled() ? 20 : 0);
+
+        var minusEnabled = function () {
+            return self.network.layers.length > 2;
+        };
+
+        self.drawRect(svg, "minus-h", minusX, minusY, length, thickness, minusEnabled())
+        self.drawRect(svg, "minus-bg", minusX, minusY, largeLength, largeLength, minusEnabled())
+            .attr("opacity", 0)
+            .on("click", function () {
+                self.network.removeLayer();
+                self.draw();
+                self.listener();
+            })
+            .on("mouseover", function () {
+                self.drawRect(svg, "minus-h", minusX, minusY, largeLength, largeThickness, minusEnabled());
+            })
+            .on("mouseout", function () {
+                self.drawRect(svg, "minus-h", minusX, minusY, length, thickness, minusEnabled());
+            });
+    },
+
+    drawRect: function (parent, rectClass, x, y, w, h, enabled) {
         var trans = d3.transition()
             .duration(400);
 
-        var rect = layerGroup.select("rect." + rectClass);
+        var rect = parent.select("rect." + rectClass);
         if (rect.empty()) {
-            rect = layerGroup.append("rect")
+            rect = parent.append("rect")
                 .classed("button", true)
                 .classed(rectClass, true)
                 .attr("x", x - w / 2)

@@ -94,7 +94,7 @@ function Network() {
 }
 
 _.extend(Network.prototype, {
-    addLayer: function () {
+    addHiddenLayer: function () {
         var newLayer = new Layer(this, this.layers.length);
         this.layers.splice(this.layers.length - 1, 0, newLayer);
 
@@ -109,11 +109,13 @@ _.extend(Network.prototype, {
         for (outputNode of this.getOutputLayer().nodes) {
             outputNode.setPredecessorCount(1);
         }
+
+        newLayer.addNode();
         return newLayer;
     },
 
-    removeLayer: function () {
-        var removedLayer = this.layers.splice(this.layers.length - 1, 1);
+    removeHiddenLayer: function () {
+        var removedLayer = this.layers.splice(this.layers.length - 2, 1);
 
         var outputLayer = this.getOutputLayer();
         outputLayer.index = this.layers.length - 1;

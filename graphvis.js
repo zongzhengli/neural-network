@@ -35,7 +35,7 @@ _.extend(GraphVis.prototype, {
         var yScale = self.getPlotYScale(dataForOutputs);
         var plotLength = self.getPlotLength(dataForOutputs);
         var trans = d3.transition()
-            .duration(1000);
+            .duration(800);
 
         var outputGroups = svg.selectAll("g.output")
             .data(dataForOutputs);
@@ -43,12 +43,13 @@ _.extend(GraphVis.prototype, {
             .append("g")
             .classed("output", true);
         outputGroups.exit()
+            .transition(trans)
             .remove();
 
         svg.selectAll("g.output")
             .each(function (dataForInputs, outputIndex) {
                 var outputGroup = d3.select(this);
-
+                var outputExiting = outputIndex >= dataForOutputs.length;
                 var outputTextX = xScale(0) - 20;
                 var outputTextY = yScale(outputIndex + 0.5);
 
@@ -64,7 +65,7 @@ _.extend(GraphVis.prototype, {
                 }
                 outputText.raise()
                     .transition(trans)
-                    .attr("opacity", 1)
+                    .attr("opacity", outputExiting ? 0 : 1)
                     .attr("x", outputTextX)
                     .attr("y", outputTextY);
 
@@ -74,15 +75,18 @@ _.extend(GraphVis.prototype, {
                     .append("g")
                     .classed("input", true);
                 inputGroups.exit()
+                    .transition(trans)
                     .remove();
 
                 outputGroup.selectAll("g.input")
                     .each(function (dataForPlots, inputIndex) {
                         var inputGroup = d3.select(this);
+                        var inputExiting = inputIndex >= dataForInputs.length;
+                        var plotExiting = inputExiting || outputExiting;
                         var plotX = xScale(inputIndex);
                         var plotY = yScale(outputIndex);
 
-                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, trans);
+                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, plotExiting, trans);
 
                         if (outputIndex === 0) {
                             var inputTextX = xScale(inputIndex + 0.5);
@@ -100,7 +104,7 @@ _.extend(GraphVis.prototype, {
                             }
                             inputText.raise()
                                 .transition(trans)
-                                .attr("opacity", 1)
+                                .attr("opacity", inputExiting ? 0 : 1)
                                 .attr("x", inputTextX)
                                 .attr("y", inputTextY);
                         }
@@ -108,11 +112,12 @@ _.extend(GraphVis.prototype, {
             });
     },
 
-    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, trans) {
+    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, exiting, trans) {
         var self = this;
         var plotWidth = 0.9 * plotLength;
         var plotHeight = 0.9 * plotLength;
         var plotTransform = "translate(" + plotX + ", " + plotY + ")";
+        var opacity = exiting ? 0 : 1;
 
         var plotRect = inputGroup.select("rect.plot");
         if (plotRect.empty()) {
@@ -125,7 +130,7 @@ _.extend(GraphVis.prototype, {
                 .attr("height", plotHeight);
         }
         plotRect.transition(trans)
-            .attr("opacity", 1)
+            .attr("opacity", opacity)
             .attr("x", plotX)
             .attr("y", plotY)
             .attr("width", plotWidth)
@@ -211,7 +216,7 @@ _.extend(GraphVis.prototype, {
                 d3.select(this)
                     .classed(plotType, true)
                     .transition(trans)
-                    .attr("opacity", 1)
+                    .attr("opacity", opacity)
                     .attr("d", plotPath.toString());
             });
     },

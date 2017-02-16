@@ -22,7 +22,7 @@ _.extend(NetworkVis.prototype, {
         var self = this;
         var svg = d3.select("svg.network");
         var trans = d3.transition()
-            .duration(1000);
+            .duration(800);
 
         self.drawLayerButtons(svg);
 
@@ -50,7 +50,7 @@ _.extend(NetworkVis.prototype, {
         var xScale = self.getLayerXScale();
         var yScale = self.getNodeYScale(layer);
         var trans = d3.transition()
-            .duration(1000);
+            .duration(800);
 
         var nodeGroups = layerGroup.selectAll("g.node")
             .data(layer.nodes);
@@ -217,7 +217,7 @@ _.extend(NetworkVis.prototype, {
         self.drawRect(svg, "plus-bg", plusX, plusY, largeLength, largeLength, plusEnabled())
             .attr("opacity", 0)
             .on("click", function () {
-                self.network.addLayer();
+                self.network.addHiddenLayer();
                 self.draw();
                 self.listener();
             })
@@ -241,7 +241,7 @@ _.extend(NetworkVis.prototype, {
         self.drawRect(svg, "minus-bg", minusX, minusY, largeLength, largeLength, minusEnabled())
             .attr("opacity", 0)
             .on("click", function () {
-                self.network.removeLayer();
+                self.network.removeHiddenLayer();
                 self.draw();
                 self.listener();
             })

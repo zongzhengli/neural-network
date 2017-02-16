@@ -21,12 +21,17 @@ _.extend(NetworkVis.prototype, {
     draw: function () {
         var self = this;
         var svg = d3.select("svg.network");
+        var trans = d3.transition()
+            .duration(1000);
 
         var layerGroups = svg.selectAll("g.layer")
             .data(this.network.layers.slice().reverse());
-        layerGroups.enter().append("g")
+        layerGroups.enter()
+            .append("g")
             .classed("layer", true);
-        layerGroups.exit().remove();
+        layerGroups.exit()
+            .transition(trans)
+            .remove();
 
         svg.selectAll("g.layer")
             .each(function (layer, reversedIndex) {
@@ -101,7 +106,9 @@ _.extend(NetworkVis.prototype, {
         if (rect.empty()) {
             rect = layerGroup.append("rect")
                 .classed("button", true)
-                .classed(rectClass, true);
+                .classed(rectClass, true)
+                .attr("x", x - w / 2)
+                .attr("y", y - h / 2);
         }
         rect.transition(trans)
             .attr("visibility", enabled ? "visible" : "hidden")
@@ -121,15 +128,20 @@ _.extend(NetworkVis.prototype, {
 
         var nodeGroups = layerGroup.selectAll("g.node")
             .data(layer.nodes);
-        nodeGroups.enter().append("g")
+        nodeGroups.enter()
+            .append("g")
             .classed("node", true);
-        nodeGroups.exit().remove();
+        nodeGroups.exit()
+            .transition(trans)
+            .remove();
 
         layerGroup.selectAll("g.node")
             .each(function (node, nodeIndex) {
                 var nodeGroup = d3.select(this);
+                var nodeExiting = nodeIndex >= layer.nodes.length;
                 var nodeX = xScale(layerIndex);
-                var nodeY = yScale(nodeIndex);
+                var nodeY = yScale(nodeIndex - (nodeExiting ? 1 : 0));
+                var opacity = nodeExiting ? 0 : 1;
 
                 var predLayer = layer.predecessor();
                 if (predLayer) {
@@ -137,15 +149,23 @@ _.extend(NetworkVis.prototype, {
 
                     var edgePaths = nodeGroup.selectAll("path.edge")
                         .data(node.weights);
-                    edgePaths.enter().append("path")
+                    edgePaths.enter()
+                        .append("path")
                         .classed("edge", true)
                         .attr("opacity", 0);
-                    edgePaths.exit().remove();
+                    edgePaths.exit()
+                        .transition(trans)
+                        .remove();
 
                     nodeGroup.selectAll("path.edge")
                         .each(function (weight, weightIndex) {
+                            if (weightIndex === 0) {
+                                return;
+                            }
+                            var predNodeIndex = weightIndex - 1;
+                            var predNodeExiting = predNodeIndex >= predLayer.nodes.length;
                             var predNodeX = xScale(layerIndex - 1);
-                            var predNodeY = predYScale(weightIndex);
+                            var predNodeY = predYScale(predNodeIndex - (predNodeExiting ? 1 : 0));
 
                             var edgePath = d3.path();
                             edgePath.moveTo(predNodeX, predNodeY);
@@ -154,7 +174,7 @@ _.extend(NetworkVis.prototype, {
 
                             d3.select(this)
                                 .transition(trans)
-                                .attr("opacity", 1)
+                                .attr("opacity", opacity)
                                 .attr("d", edgePath.toString());
                         });
                 }
@@ -168,8 +188,9 @@ _.extend(NetworkVis.prototype, {
                         .attr("cx", nodeX)
                         .attr("cy", nodeY);
                 }
-                nodeCircle.transition(trans)
-                    .attr("opacity", 1)
+                nodeCircle.raise()
+                    .transition(trans)
+                    .attr("opacity", opacity)
                     .attr("cx", nodeX)
                     .attr("cy", nodeY);
 
@@ -187,9 +208,10 @@ _.extend(NetworkVis.prototype, {
                             .attr("x", nodeX)
                             .attr("y", nodeY);
                     }
-                    nodeText.transition(trans)
+                    nodeText.raise()
+                        .transition(trans)
                         .text(text)
-                        .attr("opacity", 1)
+                        .attr("opacity", opacity)
                         .attr("x", nodeX)
                         .attr("y", nodeY);
                 }
@@ -238,9 +260,11 @@ _.extend(GraphVis.prototype, {
 
         var outputGroups = svg.selectAll("g.output")
             .data(dataForOutputs);
-        outputGroups.enter().append("g")
+        outputGroups.enter()
+            .append("g")
             .classed("output", true);
-        outputGroups.exit().remove();
+        outputGroups.exit()
+            .remove();
 
         svg.selectAll("g.output")
             .each(function (dataForInputs, outputIndex) {
@@ -267,9 +291,11 @@ _.extend(GraphVis.prototype, {
 
                 var inputGroups = outputGroup.selectAll("g.input")
                     .data(dataForInputs);
-                inputGroups.enter().append("g")
+                inputGroups.enter()
+                    .append("g")
                     .classed("input", true);
-                inputGroups.exit().remove();
+                inputGroups.exit()
+                    .remove();
 
                 outputGroup.selectAll("g.input")
                     .each(function (dataForPlots, inputIndex) {
@@ -378,9 +404,11 @@ _.extend(GraphVis.prototype, {
 
         var plotPaths = plotGroup.selectAll("path.plot")
             .data(dataForPlots.range);
-        plotPaths.enter().append("path")
+        plotPaths.enter()
+            .append("path")
             .classed("plot", true);
-        plotPaths.exit().remove();
+        plotPaths.exit()
+            .remove();
 
         plotGroup.selectAll("path.plot")
             .each(function (y1, i) {

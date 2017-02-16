@@ -24,6 +24,9 @@ _.extend(ViewModel.prototype, {
                 error: ko.observable(""),
             });
         }
+        while (outputLayer.nodes.length < this.expressions().length) {
+            this.expressions.pop();
+        }
 
         $("input.expression").change();
     },

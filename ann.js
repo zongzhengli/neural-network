@@ -13,6 +13,10 @@ _.extend(Node.prototype, {
         this.weights.push(1);
     },
 
+    removePredecessor: function () {
+        this.weights.pop();
+    },
+
     randomizeWeights: function () {
         this.weights = _.map(this.weights, Math.random);
     }, 
@@ -26,16 +30,19 @@ function Layer(network, index) {
 
 _.extend(Layer.prototype, {
     addNode: function () {
-        for (predNode of this.successorNodes()) {
-            predNode.addPredecessor();
+        for (succNode of this.successorNodes()) {
+            succNode.addPredecessor();
         }
-        var node = new Node(this, Math.max(1, this.predecessorNodes().length));
+        var node = new Node(this, this.predecessorNodes().length + 1);
         this.nodes.push(node);
         return node;
     },
 
     removeNode: function () {
-        // TODO
+        for (succNode of this.successorNodes()) {
+            succNode.removePredecessor();
+        }
+        return this.nodes.pop();
     },
 
     isInput: function () {
@@ -77,6 +84,7 @@ _.extend(Layer.prototype, {
 
 function Network() {
     this.layers = [new Layer(this, 0), new Layer(this, 1)];
+    this.layers[1].nodes[0].addPredecessor();
     this.trained = false;
 }
 

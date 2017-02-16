@@ -102,15 +102,20 @@ _.extend(Network.prototype, {
             layer.index = index;
         });
 
-        var predNodeCount = newLayer.getPredecessorNodes().length;
+        var predNodes = newLayer.getPredecessorNodes();
+        var succNodes = newLayer.getSuccessorNodes();
+
         for (node of newLayer.nodes) {
-            node.setPredecessorCount(predNodeCount);
+            node.setPredecessorCount(predNodes.length);
         }
-        for (outputNode of this.getOutputLayer().nodes) {
-            outputNode.setPredecessorCount(1);
+        for (succNode of succNodes) {
+            succNode.setPredecessorCount(1);
         }
 
-        newLayer.addNode();
+        var newNodeCount = Math.max(2, predNodes.length, succNodes.length);
+        while (newLayer.nodes.length < newNodeCount) {
+            newLayer.addNode();
+        }
         return newLayer;
     },
 

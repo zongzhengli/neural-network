@@ -205,7 +205,7 @@ _.extend(NetworkVis.prototype, {
         var largeLength = 15;
         var largeThickness = 1.5;
         var xScale = self.getLayerXScale();
-        var plusX = xScale(self.network.layers.length - 1) + 100;
+        var plusX = xScale(self.network.layers.length - 1) + 25;
         var plusY = self.svgH / 2;
 
         var plusEnabled = function () {
@@ -230,8 +230,8 @@ _.extend(NetworkVis.prototype, {
                 self.drawRect(svg, "plus-v", plusX, plusY, thickness, length, plusEnabled());
             });
 
-        var minusX = plusX;
-        var minusY = plusY + (plusEnabled() ? 20 : 0);
+        var minusX = plusX + (plusEnabled() ? 20 : 0);
+        var minusY = plusY;
 
         var minusEnabled = function () {
             return self.network.layers.length > 2;

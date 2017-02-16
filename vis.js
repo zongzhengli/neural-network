@@ -23,17 +23,19 @@ _.extend(NetworkVis.prototype, {
         var svg = d3.select("svg.network");
 
         var layerGroups = svg.selectAll("g.layer")
-            .data(this.network.layers);
+            .data(this.network.layers.slice().reverse());
         layerGroups.enter().append("g")
             .classed("layer", true);
         layerGroups.exit().remove();
 
-        svg.selectAll("g.layer").each(function (layer, layerIndex) {
-            var layerGroup = d3.select(this);
-            self.drawMinusButton(layer, layerIndex, layerGroup);
-            self.drawPlusButton(layer, layerIndex, layerGroup);
-            self.drawNodeGroup(layer, layerIndex, layerGroup);
-        });
+        svg.selectAll("g.layer")
+            .each(function (layer, reversedIndex) {
+                var layerIndex = self.network.layers.length - reversedIndex - 1;
+                var layerGroup = d3.select(this);
+                self.drawMinusButton(layer, layerIndex, layerGroup);
+                self.drawPlusButton(layer, layerIndex, layerGroup);
+                self.drawNodeGroup(layer, layerIndex, layerGroup);
+            });
     },
 
     drawMinusButton: function (layer, layerIndex, layerGroup) {
@@ -139,9 +141,9 @@ _.extend(NetworkVis.prototype, {
                 var nodeX = xScale(layerIndex);
                 var nodeY = yScale(nodeIndex);
 
-                var succLayer = layer.successor();
-                if (succLayer) {
-                    var succYScale = self.nodeYScale(succLayer);
+                var predLayer = layer.predecessor();
+                if (predLayer) {
+                    var predYScale = self.nodeYScale(predLayer);
 
                     var edgePaths = nodeGroup.selectAll("path.edge")
                         .data(node.weights);
@@ -152,16 +154,15 @@ _.extend(NetworkVis.prototype, {
 
                     nodeGroup.selectAll("path.edge")
                         .each(function (weight, weightIndex) {
-                            var succNodeX = xScale(layerIndex + 1);
-                            var succNodeY = succYScale(weightIndex);
+                            var predNodeX = xScale(layerIndex - 1);
+                            var predNodeY = predYScale(weightIndex);
 
                             var edgePath = d3.path();
-                            edgePath.moveTo(succNodeX, succNodeY);
+                            edgePath.moveTo(predNodeX, predNodeY);
                             edgePath.lineTo(nodeX, nodeY);
                             edgePath.closePath();
 
                             d3.select(this)
-                                .classed("zero", weight === 0)
                                 .transition(trans)
                                 .attr("opacity", 1)
                                 .attr("d", edgePath.toString());
@@ -177,16 +178,14 @@ _.extend(NetworkVis.prototype, {
                         .attr("cx", nodeX)
                         .attr("cy", nodeY);
                 }
-                nodeCircle.raise()
-                    .transition(trans)
+                nodeCircle.transition(trans)
                     .attr("opacity", 1)
                     .attr("cx", nodeX)
                     .attr("cy", nodeY);
 
-                var text =
-                    !layer.successor()   ? "F" + (nodeIndex + 1) :
-                    !layer.predecessor() ? Expression.symbols[nodeIndex] :
-                                           "";
+                var text = layer.isOutput() ? "F" + (nodeIndex + 1) :
+                           layer.isInput()  ? Expression.symbols[nodeIndex] :
+                                              "";
 
                 if (text) {
                     var nodeText = nodeGroup.select("text.node");
@@ -198,8 +197,7 @@ _.extend(NetworkVis.prototype, {
                             .attr("x", nodeX)
                             .attr("y", nodeY);
                     }
-                    nodeText.raise()
-                        .transition(trans)
+                    nodeText.transition(trans)
                         .text(text)
                         .attr("opacity", 1)
                         .attr("x", nodeX)

@@ -38,6 +38,18 @@ _.extend(Layer.prototype, {
         // TODO
     },
 
+    isInput: function () {
+        return this.index === 0;
+    },
+
+    isOutput: function () {
+        return this.index === this.network.layers.length - 1;
+    },
+
+    isHidden: function () {
+        return this.index > 0 && this.index < this.network.layers.length - 1;
+    },
+
     predecessor: function () {
         return this.network.layers[this.index - 1];
     },

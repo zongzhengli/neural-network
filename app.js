@@ -37,6 +37,7 @@ _.extend(App.prototype, {
         koExpr.error(error);
         $(event.target.parentNode).popover(error ? "show" : "hide");
         this.drawActualPlots();
+        this.drawEstimatedPlots();
     },
 
     getFunctionSignature: function (index) {
@@ -55,7 +56,8 @@ _.extend(App.prototype, {
     getEstimatedData: function () {
         var self = this;
         var rangeFunc = function (expr, exprIndex, symbolValues, code) {
-            return self.network.process(symbolValues)[exprIndex];
+            self.network.doForwardPass(symbolValues)
+            return self.network.getOutputLayer().nodes[exprIndex].z;
         };
         return this.getDataImpl(rangeFunc);
     },

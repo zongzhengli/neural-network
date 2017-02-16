@@ -1,6 +1,9 @@
 function Node(layer, predCount) {
     this.layer = layer;
     this.weights = undefined;
+    this.a = undefined;
+    this.z = undefined;
+
     this.setPredecessorCount(predCount);
 
     if (typeof Node.counter === "undefined") {
@@ -24,13 +27,25 @@ _.extend(Node.prototype, {
 
     randomizeWeights: function () {
         this.weights = _.map(this.weights, Math.random);
-    }, 
+    },
+
+    doForwardPass: function (x) {
+        this.a = math.dot(x, this.weights);
+        this.z = this.layer.activation(this.a);
+    }
 });
 
 function Layer(network, index) {
     this.network = network;
     this.nodes = [new Node(this, 0)];
     this.index = index;
+
+    this.activation = function (a) {
+        return 1 / (1 + Math.exp(-a));
+    };
+    this.derivative = function (a) {
+        return this.activation(a) * (1 - this.activation(a));
+    };
 }
 
 _.extend(Layer.prototype, {
@@ -84,7 +99,24 @@ _.extend(Layer.prototype, {
         for (node of this.nodes) {
             node.randomizeWeights();
         }
-    }, 
+    },
+
+    doForwardPass: function (x) {
+        x = x.slice();
+        x.unshift(1);
+
+        for (node of this.nodes) {
+            node.doForwardPass(x);
+        }
+
+        var succLayer = this.getSuccessor();
+        if (succLayer) {
+            var y = _.map(this.nodes, function (node) {
+                return node.z;
+            });
+            succLayer.doForwardPass(y);
+        }
+    },
 });
 
 function Network() {
@@ -146,13 +178,12 @@ _.extend(Network.prototype, {
         }
     },
 
-    train: function (data) {
+    train: function (x) {
         // TODO
         this.trained = true;
     },
 
-    process: function (data) {
-        // TODO
-        return _.map(this.outputLayer().nodes, Math.random);
+    doForwardPass: function (x) {
+        this.layers[1].doForwardPass(x);
     },
 });

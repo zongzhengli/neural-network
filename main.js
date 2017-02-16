@@ -1,7 +1,7 @@
 $(function() {
     $(".popover").popover();
 
-    app = new ViewModel();
+    var app = new App();
     app.drawAll();
     ko.applyBindings(app);
 });

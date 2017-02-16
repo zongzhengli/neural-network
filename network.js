@@ -30,16 +30,16 @@ function Layer(network, index) {
 
 _.extend(Layer.prototype, {
     addNode: function () {
-        for (succNode of this.successorNodes()) {
+        for (succNode of this.getSuccessorNodes()) {
             succNode.addPredecessor();
         }
-        var node = new Node(this, this.predecessorNodes().length + 1);
+        var node = new Node(this, this.getPredecessorNodes().length + 1);
         this.nodes.push(node);
         return node;
     },
 
     removeNode: function () {
-        for (succNode of this.successorNodes()) {
+        for (succNode of this.getSuccessorNodes()) {
             succNode.removePredecessor();
         }
         return this.nodes.pop();
@@ -57,21 +57,21 @@ _.extend(Layer.prototype, {
         return this.index > 0 && this.index < this.network.layers.length - 1;
     },
 
-    predecessor: function () {
+    getPredecessor: function () {
         return this.network.layers[this.index - 1];
     },
 
-    successor: function () {
+    getSuccessor: function () {
         return this.network.layers[this.index + 1];
     },
 
-    predecessorNodes: function () {
-        var predLayer = this.predecessor();
+    getPredecessorNodes: function () {
+        var predLayer = this.getPredecessor();
         return predLayer ? predLayer.nodes : [];
     },
 
-    successorNodes: function () {
-        var succLayer = this.successor();
+    getSuccessorNodes: function () {
+        var succLayer = this.getSuccessor();
         return succLayer ? succLayer.nodes : [];
     },
 
@@ -99,11 +99,11 @@ _.extend(Network.prototype, {
         // TODO
     },
 
-    inputLayer: function () {
+    getInputLayer: function () {
         return this.layers[0];
     },
 
-    outputLayer: function () {
+    getOutputLayer: function () {
         return this.layers[this.layers.length - 1];
     },
 

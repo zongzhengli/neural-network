@@ -1,4 +1,4 @@
-function ViewModel() {
+function App() {
     this.network = new Network();
     this.networkVis = new NetworkVis(this.network, this.onChangeNetwork.bind(this));
     this.graphVis = new GraphVis();
@@ -11,10 +11,10 @@ function ViewModel() {
     this.inputCount = ko.observable(1);
 }
 
-_.extend(ViewModel.prototype, {
+_.extend(App.prototype, {
     onChangeNetwork: function () {
-        var inputLayer = this.network.inputLayer();
-        var outputLayer = this.network.outputLayer();
+        var inputLayer = this.network.getInputLayer();
+        var outputLayer = this.network.getOutputLayer();
 
         this.inputCount(inputLayer.nodes.length);
 
@@ -39,28 +39,28 @@ _.extend(ViewModel.prototype, {
         this.drawActualPlots();
     },
 
-    functionSignature: function (index) {
+    getFunctionSignature: function (index) {
         // TODO: limit number of nodes in input layer
         var symbols = _.take(Expression.symbols, this.inputCount());
         return "F" + (index + 1) + "(" + symbols.join(", ") + ") =";
     },
 
-    actualData: function () {
+    getActualData: function () {
         var rangeFunc = function (expr, exprIndex, symbolValues, code) {
             return Expression.evaluate(expr, symbolValues, code);
         };
-        return this.implData(rangeFunc);
+        return this.getDataImpl(rangeFunc);
     },
 
-    estimatedData: function () {
+    getEstimatedData: function () {
         var self = this;
         var rangeFunc = function (expr, exprIndex, symbolValues, code) {
             return self.network.process(symbolValues)[exprIndex];
         };
-        return this.implData(rangeFunc);
+        return this.getDataImpl(rangeFunc);
     },
 
-    implData: function (rangeFunc) {
+    getDataImpl: function (rangeFunc) {
         var self = this;
         var symbolCount = this.inputCount();
         var symbols = _.take(Expression.symbols, symbolCount);
@@ -114,11 +114,11 @@ _.extend(ViewModel.prototype, {
     },
 
     drawActualPlots: function () {
-        this.graphVis.draw(this.actualData(), PlotType.Actual);
+        this.graphVis.draw(this.getActualData(), PlotType.Actual);
     },
 
     drawEstimatedPlots: function () {
-        this.graphVis.draw(this.estimatedData(), PlotType.Estimated);
+        this.graphVis.draw(this.getEstimatedData(), PlotType.Estimated);
     },
 
     drawNetwork: function () {

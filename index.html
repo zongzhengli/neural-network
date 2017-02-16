@@ -9,9 +9,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js"></script>
-    <script src="expr.js"></script>
-    <script src="ann.js"></script>
-    <script src="vis.js"></script>
+    <script src="expression.js"></script>
+    <script src="network.js"></script>
+    <script src="graphvis.js"></script>
+    <script src="networkvis.js"></script>
     <script src="app.js"></script>
     <script src="main.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
@@ -37,7 +38,7 @@
                  data-trigger="manual"
                  data-bind="attr: { 'data-content': error }">
 
-                <span class="input-group-addon" data-bind="text: $root.functionSignature($index())"></span>
+                <span class="input-group-addon" data-bind="text: $root.getFunctionSignature($index())"></span>
                 <input class="form-control expression" type="text"
                        data-bind="value: body, 
                                   event: { change: $root.onChangeExpression.bind($root) }">

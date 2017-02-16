@@ -28,8 +28,9 @@ path.edge {
 path.edge.zero {
     visibility: hidden;
 }
-rect.plus {
+rect.button {
     fill: gray;
+    cursor: pointer;
 }
 
 svg.graph {

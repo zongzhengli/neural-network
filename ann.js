@@ -34,6 +34,10 @@ _.extend(Layer.prototype, {
         return node;
     },
 
+    removeNode: function () {
+        // TODO
+    },
+
     predecessor: function () {
         return this.network.layers[this.index - 1];
     },
@@ -69,6 +73,10 @@ _.extend(Network.prototype, {
         var layer = new Layer(this, this.layers.length);
         this.layers.push(layer);
         return layer;
+    },
+
+    removeLayer: function () {
+        // TODO
     },
 
     inputLayer: function () {

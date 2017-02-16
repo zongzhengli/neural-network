@@ -30,69 +30,94 @@ _.extend(NetworkVis.prototype, {
 
         svg.selectAll("g.layer").each(function (layer, layerIndex) {
             var layerGroup = d3.select(this);
+            self.drawMinusButton(layer, layerIndex, layerGroup);
             self.drawPlusButton(layer, layerIndex, layerGroup);
             self.drawNodeGroup(layer, layerIndex, layerGroup);
         });
     },
 
+    drawMinusButton: function (layer, layerIndex, layerGroup) {
+        var self = this;
+        var length = 10;
+        var thickness = 1;
+        var largeLength = 15;
+        var largeThickness = 1.5;
+        var xScale = self.nodeXScale();
+        var yScale = self.nodeYScale(layer);
+        var x = xScale(layerIndex);
+        var y = yScale(layer.nodes.length - 1) + 45;
+
+        var enabled = function () {
+            return layer.nodes.length > 1;
+        };
+
+        self.drawRect(layerGroup, "minus-h", x, y, length, thickness, enabled())
+        self.drawRect(layerGroup, "minus-bg", x, y, largeLength, largeLength, enabled())
+            .attr("opacity", 0)
+            .on("click", function () {
+                layer.removeNode();
+                self.draw();
+                self.listener();
+            })
+            .on("mouseover", function () {
+                self.drawRect(layerGroup, "minus-h", x, y, largeLength, largeThickness, enabled());
+            })
+            .on("mouseout", function () {
+                self.drawRect(layerGroup, "minus-h", x, y, length, thickness, enabled());
+            });
+    },
+
     drawPlusButton: function (layer, layerIndex, layerGroup) {
         var self = this;
-        var plusLength = 10;
-        var plusThickness = 1;
-        var plusLargeLength = 13;
-        var plusLargeThickness = 1.3;
+        var length = 10;
+        var thickness = 1;
+        var largeLength = 15;
+        var largeThickness = 1.5;
+        var xScale = self.nodeXScale();
+        var yScale = self.nodeYScale(layer);
+        var x = xScale(layerIndex);
+        var y = yScale(layer.nodes.length - 1) + 25;
+
         var enabled = function () {
-            return layer.nodes.length < Expression.symbols.length
+            return layer.nodes.length < Expression.symbols.length;
         };
-        var onClick = function () {
-            if (!enabled()) {
-                onMouseOut();
-                return;
-            }
-            layer.addNode();
-            self.draw();
-            self.listener();
-            onMouseOver();
-        };
-        var onMouseOver = function () {
-            drawRect("horizontal", plusLargeLength, plusLargeThickness);
-            drawRect("vertical", plusLargeThickness, plusLargeLength);
-        };
-        var onMouseOut = function () {
-            drawRect("horizontal", plusLength, plusThickness);
-            drawRect("vertical", plusThickness, plusLength);
-        }
 
-        drawRect("horizontal", plusLength, plusThickness)
-            .attr("opacity", enabled() ? 1 : 0);
-        drawRect("vertical", plusThickness, plusLength)
-            .attr("opacity", enabled() ? 1 : 0);
-        drawRect("bg", plusLargeLength, plusLargeLength)
+        self.drawRect(layerGroup, "plus-h", x, y, length, thickness, enabled())
+        self.drawRect(layerGroup, "plus-v", x, y, thickness, length, enabled())
+        self.drawRect(layerGroup, "plus-bg", x, y, largeLength, largeLength, enabled())
             .attr("opacity", 0)
-            .on("click", onClick)
-            .on("mouseover", onMouseOver)
-            .on("mouseout", onMouseOut);
+            .on("click", function () {
+                layer.addNode();
+                self.draw();
+                self.listener();
+            })
+            .on("mouseover", function () {
+                self.drawRect(layerGroup, "plus-h", x, y, largeLength, largeThickness, enabled());
+                self.drawRect(layerGroup, "plus-v", x, y, largeThickness, largeLength, enabled());
+            })
+            .on("mouseout", function () {
+                self.drawRect(layerGroup, "plus-h", x, y, length, thickness, enabled());
+                self.drawRect(layerGroup, "plus-v", x, y, thickness, length, enabled());
+            });
+    },
 
-        function drawRect(rectClass, w, h) {
-            var xScale = self.nodeXScale();
-            var plusX = xScale(layerIndex);
-            var plusY = 0.05 * self.svgH;
-            var trans = d3.transition()
-                .duration(100);
+    drawRect: function (layerGroup, rectClass, x, y, w, h, enabled) {
+        var trans = d3.transition()
+            .duration(400);
 
-            var rect = layerGroup.select("rect.plus." + rectClass);
-            if (rect.empty()) {
-                rect = layerGroup.append("rect")
-                    .classed("plus", true)
-                    .classed(rectClass, true);
-            }
-            rect.transition(trans)
-                .attr("x", plusX - w / 2)
-                .attr("y", plusY - h / 2)
-                .attr("width", w)
-                .attr("height", h);
-            return rect;
+        var rect = layerGroup.select("rect." + rectClass);
+        if (rect.empty()) {
+            rect = layerGroup.append("rect")
+                .classed("button", true)
+                .classed(rectClass, true);
         }
+        rect.transition(trans)
+            .attr("visibility", enabled ? "visible" : "hidden")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("x", x - w / 2)
+            .attr("y", y - h / 2);
+        return rect;
     },
 
     drawNodeGroup: function (layer, layerIndex, layerGroup) {

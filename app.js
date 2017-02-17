@@ -7,7 +7,7 @@ function App() {
     this.networkVis = new NetworkVis(this.network, this.onChangeNetwork.bind(this));
     this.graphVis = new GraphVis();
 
-    this.isTraining = false;
+    this.isTraining = ko.observable(false);
     this.trainInterval = null;
 
     this.expressions = ko.observableArray([{ 
@@ -22,22 +22,22 @@ function App() {
 
 _.extend(App.prototype, {
     onClickTrain: function() {
-        if (this.isTraining) {
+        if (this.isTraining()) {
             this.trainButtonText("Train");
             clearInterval(this.trainInterval);
             this.networkVis.enableButtons();
             this.drawNetworkFast();
-            this.isTraining = false;
+            this.isTraining(false);
         } else {
             this.trainButtonText("Stop");
             this.trainInterval = setInterval(this.trainNetwork.bind(this), TRAINING_UPDATE_MS);
             this.networkVis.disableButtons();
-            this.isTraining = true;
+            this.isTraining(true);
         }
     },
 
     onClickForget: function() {
-        if (this.isTraining) {
+        if (this.isTraining()) {
             this.onClickTrain();
         }
         this.network.randomizeWeights();
@@ -46,7 +46,7 @@ _.extend(App.prototype, {
     },
 
     onClickRandomExample: function() {
-        if (this.isTraining) {
+        if (this.isTraining()) {
             this.onClickTrain();
         }
         this.network.reset();

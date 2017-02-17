@@ -30,7 +30,8 @@
         <svg class="graph" viewBox="0 0 400 300"></svg>
 
         <div class="bottom-right">
-            <button type="button" class="btn train" data-bind="text: trainButtonText,
+            <button type="button" class="btn train" data-bind="
+                text: trainButtonText,
                 click: onClickTrain,
                 enable: isEveryExpressionValid()"></button>
 
@@ -47,9 +48,10 @@
                     data-bind="attr: { 'data-content': error }">
 
                     <span class="input-group-addon" data-bind="text: $root.getFunctionSignature($index())"></span>
-                    <input class="form-control expression" type="text"
-                           data-bind="value: text, 
-                                      event: { change: $root.onChangeExpression.bind($root) }">
+                    <input class="form-control expression" type="text" data-bind="
+                        value: text, 
+                        disable: $root.isTraining(),
+                        event: { change: $root.onChangeExpression.bind($root) }">
                 </div>
             </div>
         </div>

@@ -22,6 +22,7 @@ function App() {
 
 _.extend(App.prototype, {
     onClickTrain: function() {
+    console.log("click");
         if (this.isTraining()) {
             this.trainButtonText("Train");
             clearInterval(this.trainInterval);
@@ -122,7 +123,7 @@ _.extend(App.prototype, {
             return Expression.isValid(koExpr.text(), self.inputCount())
         });
         if (!result) {
-            self.isTraining = false;
+            self.isTraining(false);
         }
         return result;
     },

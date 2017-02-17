@@ -9,7 +9,7 @@ var Expression = {
             .value();
     },
 
-    validate: function (expr, varCount) {
+    getError: function (expr, varCount) {
         try {
             var code = math.compile(expr);
             var values = _.times(varCount, _.constant(0));
@@ -22,6 +22,10 @@ var Expression = {
             return e.message;
         }
         return undefined;
+    },
+
+    isValid: function (expr, varCount) {
+        return expr && !this.getError(expr, varCount);
     },
 
     evaluate: function (code, values) {

@@ -2,6 +2,7 @@ var TRAINING_ITERATIONS = 10000;
 var TRAINING_BATCH_SIZE = 1;
 
 function App() {
+    var self = this;
     this.network = new Network();
     this.networkVis = new NetworkVis(this.network, this.onChangeNetwork.bind(this));
     this.graphVis = new GraphVis();
@@ -52,7 +53,7 @@ _.extend(App.prototype, {
     },
 
     onChangeExpression: function (koExpr, event) {
-        var error = Expression.validate(koExpr.text(), this.inputCount());
+        var error = Expression.getError(koExpr.text(), this.inputCount());
         koExpr.error(error);
         $(event.target.parentNode).popover(error ? "show" : "hide");
         this.drawActualPlots();
@@ -62,6 +63,17 @@ _.extend(App.prototype, {
     getFunctionSignature: function (index) {
         var symbols = _.take(Expression.symbols, this.inputCount());
         return "F" + (index + 1) + "(" + symbols.join(", ") + ") =";
+    },
+
+    isEveryExpressionValid: function () {
+        var self = this;
+        var result = _.every(self.expressions(), function (koExpr) {
+            return Expression.isValid(koExpr.text(), self.inputCount())
+        });
+        if (!result) {
+            self.isTraining = false;
+        }
+        return result;
     },
 
     getActualData: function () {
@@ -87,7 +99,7 @@ _.extend(App.prototype, {
         return _.map(this.expressions(), function (koExpr, exprIndex) {
             var expr = koExpr.text();
 
-            if (!expr || Expression.validate(expr, symbolCount)) {
+            if (!Expression.isValid(expr, symbolCount)) {
                 return _.map(symbols, _.constant({
                     domain: [],
                     range: [],
@@ -133,15 +145,11 @@ _.extend(App.prototype, {
     },
 
     trainNetwork: function () {
-        //this.network.train();
         var symbolCount = this.inputCount();
 
         var codes = _.map(this.expressions(), function (koExpr) {
             var expr = koExpr.text();
-            if (!expr || Expression.validate(expr, symbolCount)) {
-                return null;
-            }
-            return math.compile(expr);
+            return Expression.isValid(expr, symbolCount) ? math.compile(expr) : null;
         });
 
         if (_.some(codes, _.isNull)) {

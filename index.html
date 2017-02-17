@@ -31,7 +31,9 @@
 
         <div class="col-md-11 bottom">
             <button type="button" class="btn train"
-            data-bind="text: trainButtonText, click: onClickTrainButton"></button>
+            data-bind="text: trainButtonText,
+                click: onClickTrainButton,
+                enable: isEveryExpressionValid()"></button>
 
             <div data-bind="template: { foreach: expressions,
                 beforeRemove: function (e) { $(e).fadeOut(); },

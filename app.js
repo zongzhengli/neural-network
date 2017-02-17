@@ -22,7 +22,6 @@ function App() {
 
 _.extend(App.prototype, {
     onClickTrain: function() {
-    console.log("click");
         if (this.isTraining()) {
             this.trainButtonText("Train");
             clearInterval(this.trainInterval);

@@ -152,7 +152,6 @@ _.extend(App.prototype, {
                 return _.map(symbols, _.constant({
                     domain: [],
                     range: [],
-                    median: 0,
                 }));
             }
             var code = math.compile(expr);
@@ -167,11 +166,9 @@ _.extend(App.prototype, {
                     symbolValues[symbolIndex] = x;
                     return rangeFunc(code, exprIndex, symbolValues);
                 });
-
                 return {
                     domain: domain,
                     range: range,
-                    median: _(range).filter(_.isNumber).mean(),
                 };
             });
         });

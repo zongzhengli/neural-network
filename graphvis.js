@@ -172,15 +172,23 @@ _.extend(GraphVis.prototype, {
         plotGroup.transition(trans)
             .attr("transform", plotTransform)
 
-        var domainInterval = [
-            _.first(dataForPlots.domain),
-            _.last(dataForPlots.domain),
-        ];
+        var domainInterval = [_.first(dataForPlots.domain), _.last(dataForPlots.domain)];
         var domainWidth = domainInterval[1] - domainInterval[0];
-        var rangeInterval = [
-            dataForPlots.median - domainWidth / 2, 
-            dataForPlots.median + domainWidth / 2,
-        ];
+
+        var mean;
+        if (plotType === PlotType.actual) {
+            mean = _(dataForPlots.range)
+                .filter(function (x) {
+                    return x > -1e3 && x < 1e3;
+                })
+                .mean();
+            plotGroup.attr("data-mean", mean);
+        } else {
+            mean = +inputGroup.select("g.plot-" + PlotType.actual).attr("data-mean");
+        }
+
+        var rangeInterval = [mean - domainWidth / 2, mean + domainWidth / 2];
+
         var xScale = d3.scaleLinear()
             .domain(domainInterval)
             .range([0, plotWidth]);

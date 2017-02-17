@@ -152,38 +152,22 @@ _.extend(App.prototype, {
 
             return _.map(symbols, function (symbol, symbolIndex) {
                 var symbolValues = _.map(symbols, _.constant(1));
-                var domainStart = -5;
-
-                symbolValues[symbolIndex] = domainStart;
-                if (!Expression.evaluate(code, symbolValues)) {
-                    domainStart = 0.1;
-                }
-                var domain = _.range(domainStart, domainStart + 10.1, 0.2);
+                var domainStart = -2;
+                var domainWidth = 4;
+                var domainInc = 0.1;
+                var domain = _.range(domainStart, domainStart + domainWidth + domainInc / 2, domainInc);
+                var range = _.map(domain, function (x) {
+                    symbolValues[symbolIndex] = x;
+                    return rangeFunc(code, exprIndex, symbolValues);
+                });
 
                 return {
                     domain: domain,
-                    range: _.map(domain, function (x) {
-                        symbolValues[symbolIndex] = x;
-                        return rangeFunc(code, exprIndex, symbolValues);
-                    }),
-                    median: self.pickMedian(code, domainStart, symbolIndex, symbolValues),
+                    range: range,
+                    median: _(range).filter(_.isNumber).mean(),
                 };
             });
         });
-    },
-
-    pickMedian: function (code, domainStart, symbolIndex, symbolValues) {
-        symbolValues[symbolIndex] = domainStart + 5;
-        var v1 = Expression.evaluate(code, symbolValues);
-        if (v1 !== undefined) {
-            return v1;
-        }
-
-        symbolValues[symbolIndex] = domainStart;
-        var v2 = Expression.evaluate(code, symbolValues);
-        symbolValues[symbolIndex] = domainStart + 10;
-        var v3 = Expression.evaluate(code, symbolValues);
-        return (v2 + v3) / 2;
     },
 
     trainNetwork: function () {
@@ -203,7 +187,7 @@ _.extend(App.prototype, {
 
             for (var batch = 0; batch < TRAINING_BATCH_SIZE; batch++) {
                 var x = _.times(symbolCount, function () {
-                    return math.random(-5, 5);
+                    return math.random(-2, 2);
                 });
 
                 var y = _.map(this.expressions(), function (koExpr, exprIndex) {

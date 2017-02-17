@@ -21,12 +21,6 @@ function App() {
 }
 
 _.extend(App.prototype, {
-    onClickRandomWeights: function() {
-        this.network.randomizeWeights();
-        this.drawNetwork();
-        this.drawEstimatedPlots();
-    },
-
     onClickTrain: function() {
         if (this.isTraining) {
             this.trainButtonText("Train");
@@ -37,6 +31,48 @@ _.extend(App.prototype, {
             this.trainInterval = setInterval(this.trainNetwork.bind(this), 1000);
             this.isTraining = true;
         }
+    },
+
+    onClickRandomWeights: function() {
+        this.network.randomizeWeights();
+        this.drawNetwork();
+        this.drawEstimatedPlots();
+    },
+
+    onClickRandomExample: function() {
+        this.network.reset();
+        var inputLayer = this.network.getInputLayer();
+        var outputLayer = this.network.getOutputLayer();
+
+        var inputCount = math.randomInt(1, 3);
+        var outputCount = math.randomInt(1, 3);
+        var layerCount = math.randomInt(3, 5);
+
+        while (inputLayer.nodes.length < inputCount) {
+            inputLayer.addNode();
+        }
+        while (outputLayer.nodes.length < outputCount) {
+            outputLayer.addNode();
+        }
+        while (this.network.layers.length < layerCount) {
+            this.network.addHiddenLayer();
+        }
+        for (var i = 1; i < this.network.layers.length - 1; i++) {
+            var extraNodeCount = math.randomInt(3);
+            while (extraNodeCount-- > 0) {
+                this.network.layers[i].addNode();
+            }
+        }
+        var exprs = Expression.getRandom(outputCount, inputCount);
+        this.expressions(_.times(outputCount, function (exprIndex) {
+            return { 
+                text: ko.observable(exprs[exprIndex]), 
+                error: ko.observable(""),
+            };
+        }));
+
+        this.onChangeNetwork();
+        this.drawNetwork();
     },
 
     onChangeNetwork: function () {

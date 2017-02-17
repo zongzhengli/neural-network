@@ -207,7 +207,7 @@ _.extend(GraphVis.prototype, {
 
                 if (x1 === undefined || x2 === undefined || 
                     y1 === undefined || y2 === undefined ||
-                    math.distance([x1, y1], [x2, y2]) > domainWidth
+                    Math.abs(y1 - y2) > domainWidth
                 ) {
                     d3.select(this).attr("opacity", 0);
                     return;

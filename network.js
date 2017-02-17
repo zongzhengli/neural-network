@@ -56,6 +56,9 @@ _.extend(Node.prototype, {
     },
 
     accumulateError: function (y) {
+        if (y === undefined) {
+            return;
+        }
         var fpa = this.layer.activation.fp(this.a);
         this.delta += fpa * (this.z - y);
     },
@@ -200,13 +203,17 @@ _.extend(Layer.prototype, {
 });
 
 function Network() {
-    this.layers = [new Layer(this, 0), new Layer(this, 1)];
-    this.layers[1].nodes[0].addPredecessor();
-    this.layers[1].activation = Activation.linear;
+    this.reset();
     this.epochSampleCount = undefined;
 }
 
 _.extend(Network.prototype, {
+    reset: function () {
+        this.layers = [new Layer(this, 0), new Layer(this, 1)];
+        this.layers[1].nodes[0].addPredecessor();
+        this.layers[1].activation = Activation.linear;
+    },
+
     addHiddenLayer: function () {
         var newLayer = new Layer(this, this.layers.length);
         this.layers.splice(this.layers.length - 1, 0, newLayer);

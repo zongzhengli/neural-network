@@ -1,12 +1,14 @@
 var LEARNING_RATE = 0.001;
+var MOMENTUM = 0.01;
+var WEIGHT_DECAY = 0.001;
 
 function Node(layer, predCount) {
     this.layer = layer;
     this.weights = undefined;
     this.a = undefined;
     this.z = undefined;
-    this.delta = undefined;
-    this.gradients = undefined;
+    this.error = undefined;
+    this.deltas = undefined;
 
     this.setPredecessorCount(predCount);
 
@@ -17,24 +19,28 @@ function Node(layer, predCount) {
 }
 
 _.extend(Node.prototype, {
+    getRandomWeight: function () {
+        return math.random(-2, 2);
+    },
+
     addPredecessor: function () {
         this.weights.push(this.getRandomWeight());
+        this.deltas.push(0);
     },
 
     removePredecessor: function () {
         this.weights.pop();
+        this.deltas.pop();
     },
 
     setPredecessorCount: function (predCount) {
         this.weights = _.times(predCount + 1, this.getRandomWeight);
+        this.deltas = _.map(this.weights, _.constant(0));
     },
 
     randomizeWeights: function () {
         this.weights = _.map(this.weights, this.getRandomWeight);
-    },
-
-    getRandomWeight: function () {
-        return math.random(-2, 2);
+        this.deltas = _.map(this.weights, _.constant(0));
     },
 
     getValue: function (x) {
@@ -50,8 +56,8 @@ _.extend(Node.prototype, {
     doBackwardPass: function (index) {
         var fpa = this.layer.activation.fp(this.a);
 
-        this.delta = fpa * _.sumBy(this.layer.getSuccessorNodes(), function (succNode) {
-            return succNode.weights[index + 1] * succNode.delta;
+        this.error = fpa * _.sumBy(this.layer.getSuccessorNodes(), function (succNode) {
+            return succNode.weights[index + 1] * succNode.error;
         });
     },
 
@@ -60,19 +66,26 @@ _.extend(Node.prototype, {
             return;
         }
         var fpa = this.layer.activation.fp(this.a);
-        this.delta += fpa * (this.z - y);
+        this.error += fpa * (this.z - y);
     },
 
     beginEpoch: function () {
-        this.delta = 0;
+        this.error = 0;
     },
 
     endEpoch: function () {
-        var predNodes = this.layer.getPredecessorNodes();
+        var self = this;
+        var predNodes = self.layer.getPredecessorNodes();
+
+        self.deltas = _.map(self.deltas, function (delta, i) {
+            var gradient = self.error * (i > 0 ? predNodes[i - 1].z : 1);
+            return -LEARNING_RATE * gradient + 
+                MOMENTUM * delta - 
+                LEARNING_RATE * WEIGHT_DECAY * self.weights[i];
+        });
         
-        for (var i = 0; i < this.weights.length; i++) {
-            var gradient = this.delta * (i > 0 ? predNodes[i - 1].z : 1);
-            this.weights[i] -= LEARNING_RATE * gradient;
+        for (var i = 0; i < self.weights.length; i++) {
+            self.weights[i] += self.deltas[i];
         }
     },
 });
@@ -149,13 +162,12 @@ _.extend(Layer.prototype, {
         return succLayer ? succLayer.getValue(y) : y;
     },
 
-    doForwardPass: function (x, y) {
+    doForwardPass: function (x) {
         if (this.isInput()) {
             _.each(this.nodes, function (node, nodeIndex) {
                 node.z = x[nodeIndex];
             });
         } else {
-            x = x.slice();
             x.unshift(1);
 
             for (node of this.nodes) {
@@ -165,7 +177,7 @@ _.extend(Layer.prototype, {
 
         var succLayer = this.getSuccessor();
         if (succLayer) {
-            succLayer.doForwardPass(_.map(this.nodes, "z"), y);
+            succLayer.doForwardPass(_.map(this.nodes, "z"));
         }
     },
 
@@ -273,7 +285,7 @@ _.extend(Network.prototype, {
     doForwardPass: function (x, y) {
         this.epochSampleCount++;
 
-        this.getInputLayer().doForwardPass(x, y);
+        this.getInputLayer().doForwardPass(x);
 
         _.each(this.getOutputLayer().nodes, function (node, nodeIndex) {
             node.accumulateError(y[nodeIndex]);
@@ -294,7 +306,7 @@ _.extend(Network.prototype, {
 
     endEpoch: function () {
         for (outputNode of this.getOutputLayer().nodes) {
-            outputNode.delta /= this.epochSampleCount;
+            outputNode.error /= this.epochSampleCount;
         }
         for (layer of this.layers) {
             layer.endEpoch();

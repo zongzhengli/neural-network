@@ -56,6 +56,7 @@ _.extend(App.prototype, {
         var inputCount = math.randomInt(1, 3);
         var outputCount = math.randomInt(1, 3);
         var layerCount = math.randomInt(3, 5);
+        var hiddenNodeCount = math.randomInt(2, 11);
 
         while (inputLayer.nodes.length < inputCount) {
             inputLayer.addNode();
@@ -63,15 +64,14 @@ _.extend(App.prototype, {
         while (outputLayer.nodes.length < outputCount) {
             outputLayer.addNode();
         }
+        var hiddenLayer = this.network.addHiddenLayer();
+        while (hiddenLayer.nodes.length < hiddenNodeCount) {
+            hiddenLayer.addNode();
+        }
         while (this.network.layers.length < layerCount) {
             this.network.addHiddenLayer();
         }
-        for (var i = 1; i < this.network.layers.length - 1; i++) {
-            var extraNodeCount = math.randomInt(3);
-            while (extraNodeCount-- > 0) {
-                this.network.layers[i].addNode();
-            }
-        }
+
         var exprs = Expression.getRandom(outputCount, inputCount);
         this.expressions(_.times(outputCount, function (exprIndex) {
             return { 

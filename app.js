@@ -92,7 +92,7 @@ _.extend(App.prototype, {
 
         while (outputLayer.nodes.length > this.expressions().length) {
             this.expressions.push({ 
-                text: ko.observable(""), 
+                text: ko.observable("x"), 
                 error: ko.observable(""),
             });
         }

@@ -1,17 +1,37 @@
+var TRAINING_ITERATIONS = 10000;
+var TRAINING_BATCH_SIZE = 1;
+
 function App() {
     this.network = new Network();
     this.networkVis = new NetworkVis(this.network, this.onChangeNetwork.bind(this));
     this.graphVis = new GraphVis();
 
+    this.isTraining = false;
+    this.trainInterval = null;
+
     this.expressions = ko.observableArray([{ 
-        text: ko.observable(""), 
+        text: ko.observable("x"), 
         error: ko.observable(""),
     }]);
 
     this.inputCount = ko.observable(1);
+
+    this.trainButtonText = ko.observable("Train");
 }
 
 _.extend(App.prototype, {
+    onClickTrainButton: function() {
+        if (this.isTraining) {
+            this.trainButtonText("Train");
+            clearInterval(this.trainInterval);
+            this.isTraining = false;
+        } else {
+            this.trainButtonText("Stop");
+            this.trainInterval = setInterval(this.trainNetwork.bind(this), 1000);
+            this.isTraining = true;
+        }
+    },
+
     onChangeNetwork: function () {
         var inputLayer = this.network.getInputLayer();
         var outputLayer = this.network.getOutputLayer();
@@ -32,7 +52,6 @@ _.extend(App.prototype, {
     },
 
     onChangeExpression: function (koExpr, event) {
-        // TODO: stop training
         var error = Expression.validate(koExpr.text(), this.inputCount());
         koExpr.error(error);
         $(event.target.parentNode).popover(error ? "show" : "hide");
@@ -41,7 +60,6 @@ _.extend(App.prototype, {
     },
 
     getFunctionSignature: function (index) {
-        // TODO: limit number of nodes in input layer
         var symbols = _.take(Expression.symbols, this.inputCount());
         return "F" + (index + 1) + "(" + symbols.join(", ") + ") =";
     },
@@ -127,14 +145,13 @@ _.extend(App.prototype, {
         });
 
         if (_.some(codes, _.isNull)) {
-            console.log("not training - expression(s) invalid");
             return;
         }
 
-        for (var iteration = 0; iteration < 10000; iteration++) {
+        for (var iteration = 0; iteration < TRAINING_ITERATIONS && this.isTraining; iteration++) {
             this.network.beginEpoch();
 
-            for (var batch = 0; batch < 1; batch++) {
+            for (var batch = 0; batch < TRAINING_BATCH_SIZE; batch++) {
                 var x = _.times(symbolCount, function () {
                     var r = 0;
                     for (var i = 0; i < 5; i++) {

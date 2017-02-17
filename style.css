@@ -57,6 +57,17 @@ path.plot.estimated {
     stroke-width: 0.5px;
 }
 
+button.train {
+    color: white !important;
+    background: purple;
+    border: none;
+    outline: none !important;
+}
+button.train:active { 
+    color: gray;
+    background-color: #580058;
+}
+
 * {
     border-radius: 0 !important;
 }

@@ -168,8 +168,7 @@ _.extend(NetworkVis.prototype, {
                         .attr("x", textX)
                         .attr("y", textY);
                 }
-                edgeText.raise()
-                    .transition(trans)
+                edgeText.transition(trans)
                     .text(weight.toFixed(2))
                     .attr("opacity", opacity)
                     .attr("dy", textDy)

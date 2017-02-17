@@ -29,20 +29,25 @@
     <div class="col-md-6 right">
         <svg class="graph" viewBox="0 0 400 300"></svg>
 
-        <div class="col-md-11 bottom"
-             data-bind="template: { foreach: expressions,
-                                    beforeRemove: function (e) { $(e).fadeOut(); },
-                                    afterAdd: function (e) { $(e).hide().fadeIn(); } }">
-            <div class="input-group"
-                 data-toggle="popover"
-                 data-placement="left"
-                 data-trigger="manual"
-                 data-bind="attr: { 'data-content': error }">
+        <div class="col-md-11 bottom">
+            <button type="button" class="btn train"
+            data-bind="text: trainButtonText, click: onClickTrainButton"></button>
 
-                <span class="input-group-addon" data-bind="text: $root.getFunctionSignature($index())"></span>
-                <input class="form-control expression" type="text"
-                       data-bind="value: text, 
-                                  event: { change: $root.onChangeExpression.bind($root) }">
+            <div data-bind="template: { foreach: expressions,
+                beforeRemove: function (e) { $(e).fadeOut(); },
+                afterAdd: function (e) { $(e).hide().fadeIn(); } }">
+
+                <div class="input-group"
+                    data-toggle="popover"
+                    data-placement="left"
+                    data-trigger="manual"
+                    data-bind="attr: { 'data-content': error }">
+
+                    <span class="input-group-addon" data-bind="text: $root.getFunctionSignature($index())"></span>
+                    <input class="form-control expression" type="text"
+                           data-bind="value: text, 
+                                      event: { change: $root.onChangeExpression.bind($root) }">
+                </div>
             </div>
         </div>
     </div>

@@ -5,8 +5,8 @@ div.right {
     background-color: #303030;
     min-height: 100vh;
 }
-div.bottom {
-    padding-bottom: 80px;
+div.bottom-right {
+    padding: 50px;
 }
 
 svg.network {
@@ -60,6 +60,10 @@ path.plot.estimated {
 button.standard {
     color: white !important;
     background: #444444;
+    min-width: 80px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-family: 'Ubuntu', sans-serif;
     border: none;
     outline: none !important;
 }
@@ -71,6 +75,10 @@ button.standard:active {
 button.train {
     color: white !important;
     background: purple;
+    min-width: 80px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-family: 'Ubuntu', sans-serif;
     border: none;
     outline: none !important;
 }
@@ -97,9 +105,8 @@ button.train:active {
 }
 
 .input-group {
-    margin-left: 40px;
-    margin-top: 10px;
     font-family: 'Ubuntu', sans-serif;
+    margin-bottom: 10px;
 }
 
 span {

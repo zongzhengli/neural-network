@@ -9,7 +9,7 @@ _.extend(NetworkVis.prototype, {
     getLayerXScale: function () {
         return d3.scaleLinear()
             .domain([-0.5, this.network.layers.length - 0.5])
-            .range([0.05 * this.svgW, 0.95 * this.svgW]);
+            .range([0.1 * this.svgW, 0.9 * this.svgW]);
     },
 
     getNodeYScale: function (layer) {

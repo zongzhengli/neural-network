@@ -4,7 +4,7 @@ function App() {
     this.graphVis = new GraphVis();
 
     this.expressions = ko.observableArray([{ 
-        body: ko.observable(""), 
+        text: ko.observable(""), 
         error: ko.observable(""),
     }]);
 
@@ -20,7 +20,7 @@ _.extend(App.prototype, {
 
         while (outputLayer.nodes.length > this.expressions().length) {
             this.expressions.push({ 
-                body: ko.observable(""), 
+                text: ko.observable(""), 
                 error: ko.observable(""),
             });
         }
@@ -33,7 +33,7 @@ _.extend(App.prototype, {
 
     onChangeExpression: function (koExpr, event) {
         // TODO: stop training
-        var error = Expression.validate(koExpr.body(), this.inputCount());
+        var error = Expression.validate(koExpr.text(), this.inputCount());
         koExpr.error(error);
         $(event.target.parentNode).popover(error ? "show" : "hide");
         this.drawActualPlots();
@@ -47,17 +47,16 @@ _.extend(App.prototype, {
     },
 
     getActualData: function () {
-        var rangeFunc = function (expr, exprIndex, symbolValues, code) {
-            return Expression.evaluate(expr, symbolValues, code);
+        var rangeFunc = function (code, exprIndex, symbolValues) {
+            return Expression.evaluate(code, symbolValues);
         };
         return this.getDataImpl(rangeFunc);
     },
 
     getEstimatedData: function () {
         var self = this;
-        var rangeFunc = function (expr, exprIndex, symbolValues, code) {
-            self.network.doForwardPass(symbolValues)
-            return self.network.getOutputLayer().nodes[exprIndex].z;
+        var rangeFunc = function (code, exprIndex, symbolValues) {
+            return self.network.getValue(symbolValues)[exprIndex];
         };
         return this.getDataImpl(rangeFunc);
     },
@@ -68,7 +67,7 @@ _.extend(App.prototype, {
         var symbols = _.take(Expression.symbols, symbolCount);
 
         return _.map(this.expressions(), function (koExpr, exprIndex) {
-            var expr = koExpr.body();
+            var expr = koExpr.text();
 
             if (!expr || Expression.validate(expr, symbolCount)) {
                 return _.map(symbols, _.constant({
@@ -84,7 +83,7 @@ _.extend(App.prototype, {
                 var domainStart = -5;
 
                 symbolValues[symbolIndex] = domainStart;
-                if (!Expression.evaluate(expr, symbolValues, code)) {
+                if (!Expression.evaluate(code, symbolValues)) {
                     domainStart = 0.1;
                 }
                 var domain = _.range(domainStart, domainStart + 10.1, 0.2);
@@ -93,26 +92,65 @@ _.extend(App.prototype, {
                     domain: domain,
                     range: _.map(domain, function (x) {
                         symbolValues[symbolIndex] = x;
-                        return rangeFunc(expr, exprIndex, symbolValues, code);
+                        return rangeFunc(code, exprIndex, symbolValues);
                     }),
-                    median: self.pickMedian(expr, domainStart, symbolIndex, symbolValues, code),
+                    median: self.pickMedian(code, domainStart, symbolIndex, symbolValues),
                 };
             });
         });
     },
 
-    pickMedian: function (expr, domainStart, symbolIndex, symbolValues, code) {
+    pickMedian: function (code, domainStart, symbolIndex, symbolValues) {
         symbolValues[symbolIndex] = domainStart + 5;
-        var v1 = Expression.evaluate(expr, symbolValues, code);
+        var v1 = Expression.evaluate(code, symbolValues);
         if (v1 !== undefined) {
             return v1;
         }
 
         symbolValues[symbolIndex] = domainStart;
-        var v2 = Expression.evaluate(expr, symbolValues, code);
+        var v2 = Expression.evaluate(code, symbolValues);
         symbolValues[symbolIndex] = domainStart + 10;
-        var v3 = Expression.evaluate(expr, symbolValues, code);
+        var v3 = Expression.evaluate(code, symbolValues);
         return (v2 + v3) / 2;
+    },
+
+    trainNetwork: function () {
+        //this.network.train();
+        var symbolCount = this.inputCount();
+
+        var codes = _.map(this.expressions(), function (koExpr) {
+            var expr = koExpr.text();
+            if (!expr || Expression.validate(expr, symbolCount)) {
+                return null;
+            }
+            return math.compile(expr);
+        });
+
+        if (_.some(codes, _.isNull)) {
+            console.log("not training - expression(s) invalid");
+            return;
+        }
+
+        for (var iteration = 0; iteration < 100; iteration++) {
+            this.network.resetGradients(x);
+
+            for (var batch = 0; batch < 1; batch++) {
+                var x = _.times(symbolCount, function () {
+                    return math.random(-5, 5);
+                });
+
+                var y = _.map(this.expressions(), function (koExpr, exprIndex) {
+                    return Expression.evaluate(codes[exprIndex], x);
+                });
+                
+                this.network.doForwardPass(x);
+                this.network.doBackwardPass(y);
+            }
+            this.network.applyGradients(x);
+        }
+        
+        this.drawNetwork();
+        this.drawEstimatedPlots();
     },
 
     drawActualPlots: function () {

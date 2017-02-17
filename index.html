@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.9.1/math.min.js"></script>
     <script src="expression.js"></script>
+    <script src="activation.js"></script>
     <script src="network.js"></script>
     <script src="graphvis.js"></script>
     <script src="networkvis.js"></script>
@@ -40,7 +41,7 @@
 
                 <span class="input-group-addon" data-bind="text: $root.getFunctionSignature($index())"></span>
                 <input class="form-control expression" type="text"
-                       data-bind="value: body, 
+                       data-bind="value: text, 
                                   event: { change: $root.onChangeExpression.bind($root) }">
             </div>
         </div>

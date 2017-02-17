@@ -5,9 +5,18 @@ function NetworkVis(network, listener) {
     this.svgH = 500;
     this.network = network;
     this.listener = listener;
+    this.buttonsEnabled = true;
 }
 
 _.extend(NetworkVis.prototype, {
+    enableButtons: function () {
+        this.buttonsEnabled = true;
+    },
+
+    disableButtons: function () {
+        this.buttonsEnabled = false;
+    },
+
     getTransition: function (networkTrans) {
         return d3.transition()
             .duration(networkTrans);
@@ -191,7 +200,7 @@ _.extend(NetworkVis.prototype, {
         var plusY = yScale(layer.nodes.length - 1) + 25;
 
         var plusEnabled = function () {
-            return layer.nodes.length < Expression.symbols.length;
+            return layer.nodes.length < Expression.symbols.length && self.buttonsEnabled;
         };
 
         self.drawRect(layerGroup, "plus-h", plusX, plusY, length, thickness, plusEnabled())
@@ -216,7 +225,7 @@ _.extend(NetworkVis.prototype, {
         var minusY = plusY + (plusEnabled() ? 20 : 0);
 
         var minusEnabled = function () {
-            return layer.nodes.length > 1;
+            return layer.nodes.length > 1 && self.buttonsEnabled;
         };
 
         self.drawRect(layerGroup, "minus-h", minusX, minusY, length, thickness, minusEnabled())
@@ -246,7 +255,7 @@ _.extend(NetworkVis.prototype, {
         var plusY = self.svgH / 2;
 
         var plusEnabled = function () {
-            return self.network.layers.length < 10;
+            return self.network.layers.length < 10 && self.buttonsEnabled;
         };
 
         self.drawRect(svg, "plus-h", plusX, plusY, length, thickness, plusEnabled())
@@ -271,7 +280,7 @@ _.extend(NetworkVis.prototype, {
         var minusY = plusY;
 
         var minusEnabled = function () {
-            return self.network.layers.length > 2;
+            return self.network.layers.length > 2 && self.buttonsEnabled;
         };
 
         self.drawRect(svg, "minus-h", minusX, minusY, length, thickness, minusEnabled())

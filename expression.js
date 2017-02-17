@@ -62,7 +62,7 @@ var Expression = {
             function (x) { return "sin(" + x + ")*" + x; },
             function (x) { return "sin(" + x + ")+" + x; },
             function (x) { return "sin(" + x + ")+sin(" + p(c2) + x + ")"; },
-            function (x) { return "sign(cos(" + x + "))"; },
+            function (x) { return "sign(cos(2" + x + "))"; },
             function (x) { return "cos(" + x + ")"; },
             //function (x) { return x + "/cos(" + x + ")"; },
             //function (x) { return "tan(" + x + ")"; },

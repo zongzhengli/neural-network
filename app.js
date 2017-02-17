@@ -25,10 +25,13 @@ _.extend(App.prototype, {
         if (this.isTraining) {
             this.trainButtonText("Train");
             clearInterval(this.trainInterval);
+            this.networkVis.enableButtons();
+            this.drawNetworkFast();
             this.isTraining = false;
         } else {
             this.trainButtonText("Stop");
             this.trainInterval = setInterval(this.trainNetwork.bind(this), TRAINING_UPDATE_MS);
+            this.networkVis.disableButtons();
             this.isTraining = true;
         }
     },

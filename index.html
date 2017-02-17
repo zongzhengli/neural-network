@@ -30,9 +30,10 @@
         <svg class="graph" viewBox="0 0 400 300"></svg>
 
         <div class="col-md-11 bottom">
-            <button type="button" class="btn train"
-            data-bind="text: trainButtonText,
-                click: onClickTrainButton,
+            <button type="button" class="btn standard" data-bind="click: onClickRandomWeights">Random Weights</button>
+
+            <button type="button" class="btn train" data-bind="text: trainButtonText,
+                click: onClickTrain,
                 enable: isEveryExpressionValid()"></button>
 
             <div data-bind="template: { foreach: expressions,

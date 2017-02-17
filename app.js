@@ -21,7 +21,13 @@ function App() {
 }
 
 _.extend(App.prototype, {
-    onClickTrainButton: function() {
+    onClickRandomWeights: function() {
+        this.network.randomizeWeights();
+        this.drawNetwork();
+        this.drawEstimatedPlots();
+    },
+
+    onClickTrain: function() {
         if (this.isTraining) {
             this.trainButtonText("Train");
             clearInterval(this.trainInterval);
@@ -161,11 +167,7 @@ _.extend(App.prototype, {
 
             for (var batch = 0; batch < TRAINING_BATCH_SIZE; batch++) {
                 var x = _.times(symbolCount, function () {
-                    var r = 0;
-                    for (var i = 0; i < 5; i++) {
-                        r += math.random(-5, 5);
-                    }
-                    return r / 5;
+                    return math.random(-5, 5);
                 });
 
                 var y = _.map(this.expressions(), function (koExpr, exprIndex) {

@@ -57,6 +57,17 @@ path.plot.estimated {
     stroke-width: 0.5px;
 }
 
+button.standard {
+    color: white !important;
+    background: #444444;
+    border: none;
+    outline: none !important;
+}
+button.standard:active { 
+    color: gray;
+    background-color: #404040;
+}
+
 button.train {
     color: white !important;
     background: purple;

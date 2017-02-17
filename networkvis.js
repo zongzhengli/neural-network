@@ -1,3 +1,5 @@
+var NetworkTransition = { normal: 800, none: 0 };
+
 function NetworkVis(network, listener) {
     this.svgW = 400;
     this.svgH = 500;
@@ -6,6 +8,11 @@ function NetworkVis(network, listener) {
 }
 
 _.extend(NetworkVis.prototype, {
+    getTransition: function (networkTrans) {
+        return d3.transition()
+            .duration(networkTrans);
+    },
+
     getLayerXScale: function () {
         return d3.scaleLinear()
             .domain([-0.5, this.network.layers.length - 0.5])
@@ -18,15 +25,11 @@ _.extend(NetworkVis.prototype, {
             .range([0.1 * this.svgH, 0.9 * this.svgH]);
     },
 
-    getTransition: function () {
-        return d3.transition()
-            .duration(800);
-    },
-
-    draw: function () {
+    draw: function (networkTrans) {
         var self = this;
         var svg = d3.select("svg.network");
-        var trans = self.getTransition();
+        var trans = d3.transition()
+            .duration(networkTrans);
 
         self.drawLayerButtons(svg);
 
@@ -43,17 +46,16 @@ _.extend(NetworkVis.prototype, {
             .each(function (layer, reversedIndex) {
                 var layerIndex = self.network.layers.length - reversedIndex - 1;
                 var layerGroup = d3.select(this);
-                self.drawNodeGroup(layer, layerIndex, layerGroup);
+                self.drawNodeGroup(layer, layerIndex, layerGroup, trans);
                 self.drawNodeButtons(layer, layerIndex, layerGroup);
             });
     },
 
-    drawNodeGroup: function (layer, layerIndex, layerGroup) {
+    drawNodeGroup: function (layer, layerIndex, layerGroup, trans) {
         var self = this;
         var layerExiting = layer.index !== layerIndex;
         var xScale = self.getLayerXScale();
         var yScale = self.getNodeYScale(layer);
-        var trans = self.getTransition();
 
         var nodeGroups = layerGroup.selectAll("g.node")
             .data(layer.nodes);
@@ -72,7 +74,7 @@ _.extend(NetworkVis.prototype, {
                 var nodeY = yScale(Math.min(nodeIndex, layer.nodes.length - 1));
                 var opacity = nodeExiting ? 0 : 1;
 
-                self.drawEdgeGroup(layer, layerIndex, node, nodeGroup, xScale, nodeX, nodeY, opacity);
+                self.drawEdgeGroup(layer, layerIndex, node, nodeGroup, trans, xScale, nodeX, nodeY, opacity);
 
                 var nodeCircle = nodeGroup.select("circle.node");
                 if (nodeCircle.empty()) {
@@ -111,12 +113,11 @@ _.extend(NetworkVis.prototype, {
             });
     },
 
-    drawEdgeGroup: function (layer, layerIndex, node, nodeGroup, xScale, nodeX, nodeY, opacity) {
+    drawEdgeGroup: function (layer, layerIndex, node, nodeGroup, trans, xScale, nodeX, nodeY, opacity) {
         var self = this;
         var predLayer = layer.getPredecessor() || layer;
         var predLayerExiting = predLayer === layer;
         var predYScale = self.getNodeYScale(predLayer);
-        var trans = self.getTransition();
 
         var edgeGroups = nodeGroup.selectAll("g.edge")
             .data(node.weights);
@@ -199,7 +200,7 @@ _.extend(NetworkVis.prototype, {
             .attr("opacity", 0)
             .on("click", function () {
                 layer.addNode();
-                self.draw();
+                self.draw(NetworkTransition.normal);
                 self.listener();
             })
             .on("mouseover", function () {
@@ -223,7 +224,7 @@ _.extend(NetworkVis.prototype, {
             .attr("opacity", 0)
             .on("click", function () {
                 layer.removeNode();
-                self.draw();
+                self.draw(NetworkTransition.normal);
                 self.listener();
             })
             .on("mouseover", function () {
@@ -254,7 +255,7 @@ _.extend(NetworkVis.prototype, {
             .attr("opacity", 0)
             .on("click", function () {
                 self.network.addHiddenLayer();
-                self.draw();
+                self.draw(NetworkTransition.normal);
                 self.listener();
             })
             .on("mouseover", function () {
@@ -278,7 +279,7 @@ _.extend(NetworkVis.prototype, {
             .attr("opacity", 0)
             .on("click", function () {
                 self.network.removeHiddenLayer();
-                self.draw();
+                self.draw(NetworkTransition.normal);
                 self.listener();
             })
             .on("mouseover", function () {
@@ -291,7 +292,7 @@ _.extend(NetworkVis.prototype, {
 
     drawRect: function (parent, rectClass, x, y, w, h, enabled) {
         var trans = d3.transition()
-            .duration(400);
+            .duration(200);
 
         var rect = parent.select("rect." + rectClass);
         if (rect.empty()) {

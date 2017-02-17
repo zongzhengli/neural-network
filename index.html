@@ -34,13 +34,11 @@
                 click: onClickTrain,
                 enable: isEveryExpressionValid()"></button>
 
-            <button type="button" class="btn standard" data-bind="click: onClickRandomWeights">Forget</button>
+            <button type="button" class="btn standard" data-bind="click: onClickForget">Forget</button>
 
             <button type="button" class="btn standard" data-bind="click: onClickRandomExample">Random Example</button>
 
-            <div data-bind="template: { foreach: expressions,
-                beforeRemove: function (e) { $(e).fadeOut(); },
-                afterAdd: function (e) { $(e).hide().fadeIn(); } }">
+            <div data-bind="template: { foreach: expressions }">
 
                 <div class="input-group"
                     data-toggle="popover"

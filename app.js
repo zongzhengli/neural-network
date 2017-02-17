@@ -1,5 +1,6 @@
-var TRAINING_ITERATIONS = 10000;
+var TRAINING_ITERATIONS = 1000;
 var TRAINING_BATCH_SIZE = 1;
+var TRAINING_UPDATE_MS = 50;
 
 function App() {
     var self = this;
@@ -28,18 +29,24 @@ _.extend(App.prototype, {
             this.isTraining = false;
         } else {
             this.trainButtonText("Stop");
-            this.trainInterval = setInterval(this.trainNetwork.bind(this), 1000);
+            this.trainInterval = setInterval(this.trainNetwork.bind(this), TRAINING_UPDATE_MS);
             this.isTraining = true;
         }
     },
 
-    onClickRandomWeights: function() {
+    onClickForget: function() {
+        if (this.isTraining) {
+            this.onClickTrain();
+        }
         this.network.randomizeWeights();
         this.drawNetwork();
         this.drawEstimatedPlots();
     },
 
     onClickRandomExample: function() {
+        if (this.isTraining) {
+            this.onClickTrain();
+        }
         this.network.reset();
         var inputLayer = this.network.getInputLayer();
         var outputLayer = this.network.getOutputLayer();
@@ -200,20 +207,28 @@ _.extend(App.prototype, {
             this.network.endEpoch();
         }
         
-        this.drawNetwork();
-        this.drawEstimatedPlots();
+        this.drawNetworkFast();
+        this.drawEstimatedPlotsFast();
     },
 
-    drawActualPlots: function () {
-        this.graphVis.draw(this.getActualData(), PlotType.Actual);
+    drawActualPlots: function (plotTrans) {
+        this.graphVis.draw(this.getActualData(), PlotType.actual, PlotTransition.normal);
     },
 
     drawEstimatedPlots: function () {
-        this.graphVis.draw(this.getEstimatedData(), PlotType.Estimated);
+        this.graphVis.draw(this.getEstimatedData(), PlotType.estimated, PlotTransition.normal);
+    },
+
+    drawEstimatedPlotsFast: function () {
+        this.graphVis.draw(this.getEstimatedData(), PlotType.estimated, PlotTransition.none);
     },
 
     drawNetwork: function () {
-        this.networkVis.draw();
+        this.networkVis.draw(NetworkTransition.normal);
+    },
+
+    drawNetworkFast: function () {
+        this.networkVis.draw(NetworkTransition.none);
     },
 
     drawAll: function () {

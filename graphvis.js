@@ -1,4 +1,6 @@
-var PlotType = { Actual: "actual", Estimated: "estimated" };
+var PlotType = { actual: "actual", estimated: "estimated" };
+
+var PlotTransition = { normal: 800, none: 0 };
 
 function GraphVis() {
     this.svgW = 400;
@@ -28,18 +30,14 @@ _.extend(GraphVis.prototype, {
             .range([centerY - halfHeight, centerY + halfHeight]);
     },
 
-    getTransition: function () {
-        return d3.transition()
-            .duration(800);
-    },
-
-    draw: function (dataForOutputs, plotType) {
+    draw: function (dataForOutputs, plotType, plotTrans) {
         var self = this;
         var svg = d3.select("svg.graph");
         var xScale = self.getPlotXScale(dataForOutputs);
         var yScale = self.getPlotYScale(dataForOutputs);
         var plotLength = self.getPlotLength(dataForOutputs);
-        var trans = self.getTransition();
+        var trans =  d3.transition()
+            .duration(plotTrans)
 
         var outputGroups = svg.selectAll("g.output")
             .data(dataForOutputs);
@@ -90,7 +88,7 @@ _.extend(GraphVis.prototype, {
                         var plotX = xScale(inputIndex);
                         var plotY = yScale(outputIndex);
 
-                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, plotExiting);
+                        self.drawSinglePlot(svg, plotType, trans, dataForPlots, inputGroup, plotX, plotY, plotLength, plotExiting);
 
                         if (outputIndex === 0) {
                             var inputTextX = xScale(inputIndex + 0.5);
@@ -116,9 +114,8 @@ _.extend(GraphVis.prototype, {
             });
     },
 
-    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, exiting) {
+    drawSinglePlot: function (svg, plotType, trans, dataForPlots, inputGroup, plotX, plotY, plotLength, exiting) {
         var self = this;
-        var trans = self.getTransition();
         var plotWidth = 0.9 * plotLength;
         var plotHeight = 0.9 * plotLength;
         var plotTransform = "translate(" + plotX + ", " + plotY + ")";

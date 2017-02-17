@@ -189,7 +189,13 @@ _.extend(App.prototype, {
             return;
         }
 
-        for (var iteration = 0; iteration < TRAINING_ITERATIONS && this.isTraining; iteration++) {
+        var startTime = performance.now();
+
+        for (var iteration = 0; this.isTraining; iteration++) {
+            if (iteration % 10 === 0 && performance.now() - startTime > TRAINING_UPDATE_MS) {
+                break;
+            }
+
             this.network.beginEpoch();
 
             for (var batch = 0; batch < TRAINING_BATCH_SIZE; batch++) {

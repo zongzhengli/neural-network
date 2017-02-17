@@ -131,22 +131,26 @@ _.extend(App.prototype, {
             return;
         }
 
-        for (var iteration = 0; iteration < 100; iteration++) {
-            this.network.resetGradients(x);
+        for (var iteration = 0; iteration < 10000; iteration++) {
+            this.network.beginEpoch();
 
             for (var batch = 0; batch < 1; batch++) {
                 var x = _.times(symbolCount, function () {
-                    return math.random(-5, 5);
+                    var r = 0;
+                    for (var i = 0; i < 5; i++) {
+                        r += math.random(-5, 5);
+                    }
+                    return r / 5;
                 });
 
                 var y = _.map(this.expressions(), function (koExpr, exprIndex) {
                     return Expression.evaluate(codes[exprIndex], x);
                 });
                 
-                this.network.doForwardPass(x);
-                this.network.doBackwardPass(y);
+                this.network.doForwardPass(x, y);
             }
-            this.network.applyGradients(x);
+            this.network.doBackwardPass();
+            this.network.endEpoch();
         }
         
         this.drawNetwork();

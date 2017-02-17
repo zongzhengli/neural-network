@@ -34,7 +34,7 @@ _.extend(Node.prototype, {
     },
 
     getRandomWeight: function () {
-        return math.random(-0.1, 0.1);
+        return math.random(-1, 1);
     },
 
     getValue: function (x) {
@@ -47,31 +47,30 @@ _.extend(Node.prototype, {
         this.z = this.layer.activation.f(this.a);
     },
 
-    doBackwardPass: function (index, y) {
-        var self = this;
-        var fpa = self.layer.activation.fp(self.a);
-        var predNodes = self.layer.getPredecessorNodes();
+    doBackwardPass: function (index) {
+        var fpa = this.layer.activation.fp(this.a);
 
-        if (y !== undefined) {
-            self.delta = fpa * (self.z - y[index]);
-        } else {
-            self.delta = fpa * _.sumBy(self.layer.getSuccessorNodes(), function (succNode) {
-                return succNode.weights[index + 1] * succNode.delta;
-            });
-        }
-
-        self.gradients[0] += self.delta;
-        for (var i = 1; i < self.gradients.length; i++) {
-            self.gradients[i] += self.delta * predNodes[i - 1].z;
-        }
+        this.delta = fpa * _.sumBy(this.layer.getSuccessorNodes(), function (succNode) {
+            return succNode.weights[index + 1] * succNode.delta;
+        });
     },
 
-    applyGradients: function () {
-        this.weights = math.subtract(this.weights, math.multiply(LEARNING_RATE, this.gradients));
+    accumulateError: function (y) {
+        var fpa = this.layer.activation.fp(this.a);
+        this.delta += fpa * (this.z - y);
     },
 
-    resetGradients: function () {
-        this.gradients = _.map(this.weights, _.constant(0));
+    beginEpoch: function () {
+        this.delta = 0;
+    },
+
+    endEpoch: function () {
+        var predNodes = this.layer.getPredecessorNodes();
+        
+        for (var i = 0; i < this.weights.length; i++) {
+            var gradient = this.delta * (i > 0 ? predNodes[i - 1].z : 1);
+            this.weights[i] -= LEARNING_RATE * gradient;
+        }
     },
 });
 
@@ -147,7 +146,7 @@ _.extend(Layer.prototype, {
         return succLayer ? succLayer.getValue(y) : y;
     },
 
-    doForwardPass: function (x) {
+    doForwardPass: function (x, y) {
         if (this.isInput()) {
             _.each(this.nodes, function (node, nodeIndex) {
                 node.z = x[nodeIndex];
@@ -163,19 +162,16 @@ _.extend(Layer.prototype, {
 
         var succLayer = this.getSuccessor();
         if (succLayer) {
-            var y = _.map(this.nodes, function (node) {
-                return node.z;
-            });
-            succLayer.doForwardPass(y);
+            succLayer.doForwardPass(_.map(this.nodes, "z"), y);
         }
     },
 
-    doBackwardPass: function (y) {
+    doBackwardPass: function () {
         if (this.isInput()) {
             return;
         }
         _.each(this.nodes, function (node, nodeIndex) {
-            node.doBackwardPass(nodeIndex, y);
+            node.doBackwardPass(nodeIndex);
         });
 
         var predLayer = this.getPredecessor();
@@ -184,15 +180,21 @@ _.extend(Layer.prototype, {
         }
     },
 
-    applyGradients: function () {
+    beginEpoch: function () {
+        if (this.isInput()) {
+            return;
+        }
         for (node of this.nodes) {
-            node.applyGradients();
+            node.beginEpoch();
         }
     },
 
-    resetGradients: function () {
+    endEpoch: function () {
+        if (this.isInput()) {
+            return;
+        }
         for (node of this.nodes) {
-            node.resetGradients();
+            node.endEpoch();
         }
     },
 });
@@ -201,6 +203,7 @@ function Network() {
     this.layers = [new Layer(this, 0), new Layer(this, 1)];
     this.layers[1].nodes[0].addPredecessor();
     this.layers[1].activation = Activation.linear;
+    this.epochSampleCount = undefined;
 }
 
 _.extend(Network.prototype, {
@@ -260,23 +263,34 @@ _.extend(Network.prototype, {
         return this.layers[1].getValue(x);
     },
 
-    doForwardPass: function (x) {
-        this.getInputLayer().doForwardPass(x);
+    doForwardPass: function (x, y) {
+        this.epochSampleCount++;
+
+        this.getInputLayer().doForwardPass(x, y);
+
+        _.each(this.getOutputLayer().nodes, function (node, nodeIndex) {
+            node.accumulateError(y[nodeIndex]);
+        });
     },
 
-    doBackwardPass: function (y) {
-        this.getOutputLayer().doBackwardPass(y);
+    doBackwardPass: function () {
+        this.getOutputLayer().getPredecessor().doBackwardPass();
     },
 
-    applyGradients: function () {
+    beginEpoch: function () {
+        this.epochSampleCount = 0;
+
         for (layer of this.layers) {
-            layer.applyGradients();
+            layer.beginEpoch();
         }
     },
 
-    resetGradients: function () {
+    endEpoch: function () {
+        for (outputNode of this.getOutputLayer().nodes) {
+            outputNode.delta /= this.epochSampleCount;
+        }
         for (layer of this.layers) {
-            layer.resetGradients();
+            layer.endEpoch();
         }
     },
 });

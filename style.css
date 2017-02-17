@@ -25,6 +25,12 @@ path.edge {
     stroke: gray;
     stroke-width: 1px;
 }
+text.edge {
+    fill: gray;
+    text-anchor: middle;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 8px;
+}
 rect.button {
     fill: gray;
     cursor: pointer;

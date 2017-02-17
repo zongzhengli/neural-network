@@ -28,14 +28,18 @@ _.extend(GraphVis.prototype, {
             .range([centerY - halfHeight, centerY + halfHeight]);
     },
 
+    getTransition: function () {
+        return d3.transition()
+            .duration(800);
+    },
+
     draw: function (dataForOutputs, plotType) {
         var self = this;
         var svg = d3.select("svg.graph");
         var xScale = self.getPlotXScale(dataForOutputs);
         var yScale = self.getPlotYScale(dataForOutputs);
         var plotLength = self.getPlotLength(dataForOutputs);
-        var trans = d3.transition()
-            .duration(800);
+        var trans = self.getTransition();
 
         var outputGroups = svg.selectAll("g.output")
             .data(dataForOutputs);
@@ -86,7 +90,7 @@ _.extend(GraphVis.prototype, {
                         var plotX = xScale(inputIndex);
                         var plotY = yScale(outputIndex);
 
-                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, plotExiting, trans);
+                        self.drawSinglePlot(svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, plotExiting);
 
                         if (outputIndex === 0) {
                             var inputTextX = xScale(inputIndex + 0.5);
@@ -112,8 +116,9 @@ _.extend(GraphVis.prototype, {
             });
     },
 
-    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, exiting, trans) {
+    drawSinglePlot: function (svg, plotType, dataForPlots, inputGroup, plotX, plotY, plotLength, exiting) {
         var self = this;
+        var trans = self.getTransition();
         var plotWidth = 0.9 * plotLength;
         var plotHeight = 0.9 * plotLength;
         var plotTransform = "translate(" + plotX + ", " + plotY + ")";

@@ -34,7 +34,7 @@ _.extend(Node.prototype, {
     },
 
     getRandomWeight: function () {
-        return math.random(-1, 1);
+        return math.random(-2, 2);
     },
 
     getValue: function (x) {

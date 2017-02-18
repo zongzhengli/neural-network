@@ -64,7 +64,7 @@ var Expression = {
             function (x) { return "sin(" + x + ")"; },
             function (x) { return "sin(" + x + ")^" + p(c2); },
             function (x) { return "sin(" + x + ")*" + x; },
-            function (x) { return "sin(" + x + ")+" + x; },
+            //function (x) { return "sin(" + x + ")+" + x; },
             function (x) { return "sin(" + x + ")+sin(" + p(c2) + x + ")"; },
             function (x) { return "sin(5" + x + ")/(5" + x + ")"; },
             function (x) { return "sign(cos(2" + x + "))"; },

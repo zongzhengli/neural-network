@@ -5,10 +5,10 @@ var WEIGHT_DECAY = 0.001;
 function Node(layer, predCount) {
     this.layer = layer;
     this.weights = undefined;
+    this.deltas = undefined;
+    this.error = undefined;
     this.a = undefined;
     this.z = undefined;
-    this.error = undefined;
-    this.deltas = undefined;
 
     this.setPredecessorCount(predCount);
 
@@ -48,39 +48,34 @@ _.extend(Node.prototype, {
         return this.layer.activation.f(a);
     },
 
-    doForwardPass: function (x) {
+    computeValue: function (x) {
         this.a = math.dot(x, this.weights);
         this.z = this.layer.activation.f(this.a);
     },
 
-    doBackwardPass: function (index) {
-        var fpa = this.layer.activation.fp(this.a);
-
-        this.error = fpa * _.sumBy(this.layer.getSuccessorNodes(), function (succNode) {
-            return succNode.weights[index + 1] * succNode.error;
-        });
-    },
-
-    accumulateError: function (y) {
+    computeErrorOutput: function (y) {
         if (y === undefined) {
-            return;
+            this.error = 0;
+        } else {
+            this.error = this.layer.activation.fp(this.a) * (this.z - y);
         }
-        var fpa = this.layer.activation.fp(this.a);
-        this.error += fpa * (this.z - y);
     },
 
-    beginEpoch: function () {
-        this.error = 0;
+    computeErrorHidden: function (index) {
+        this.error = this.layer.activation.fp(this.a) * 
+            _.sumBy(this.layer.getSuccessorNodes(), function (succNode) {
+                return succNode.weights[index + 1] * succNode.error;
+            });
     },
 
-    endEpoch: function () {
+    updateWeights: function () {
         var self = this;
         var predNodes = self.layer.getPredecessorNodes();
 
         self.deltas = _.map(self.deltas, function (delta, i) {
             var gradient = self.error * (i > 0 ? predNodes[i - 1].z : 1);
-            return -LEARNING_RATE * gradient + 
-                MOMENTUM * delta - 
+            return MOMENTUM * delta -
+                LEARNING_RATE * gradient - 
                 LEARNING_RATE * WEIGHT_DECAY * self.weights[i];
         });
         
@@ -171,7 +166,7 @@ _.extend(Layer.prototype, {
             x.unshift(1);
 
             for (node of this.nodes) {
-                node.doForwardPass(x);
+                node.computeValue(x);
             }
         }
 
@@ -181,42 +176,29 @@ _.extend(Layer.prototype, {
         }
     },
 
-    doBackwardPass: function () {
+    doBackwardPass: function (y) {
         if (this.isInput()) {
             return;
         }
-        _.each(this.nodes, function (node, nodeIndex) {
-            node.doBackwardPass(nodeIndex);
-        });
 
-        var predLayer = this.getPredecessor();
-        if (predLayer) {
-            predLayer.doBackwardPass();
+        if (this.isOutput()) {
+            for (node of this.nodes) {
+                node.computeErrorOutput(y);
+                node.updateWeights();
+            }
+        } else {
+            _.each(this.nodes, function (node, nodeIndex) {
+                node.computeErrorHidden(nodeIndex);
+                node.updateWeights();
+            });
         }
-    },
 
-    beginEpoch: function () {
-        if (this.isInput()) {
-            return;
-        }
-        for (node of this.nodes) {
-            node.beginEpoch();
-        }
-    },
-
-    endEpoch: function () {
-        if (this.isInput()) {
-            return;
-        }
-        for (node of this.nodes) {
-            node.endEpoch();
-        }
+        this.getPredecessor().doBackwardPass();
     },
 });
 
 function Network() {
     this.reset();
-    this.epochSampleCount = undefined;
 }
 
 _.extend(Network.prototype, {
@@ -282,34 +264,11 @@ _.extend(Network.prototype, {
         return this.layers[1].getValue(x);
     },
 
-    doForwardPass: function (x, y) {
-        this.epochSampleCount++;
-
+    doForwardPass: function (x) {
         this.getInputLayer().doForwardPass(x);
-
-        _.each(this.getOutputLayer().nodes, function (node, nodeIndex) {
-            node.accumulateError(y[nodeIndex]);
-        });
     },
 
-    doBackwardPass: function () {
-        this.getOutputLayer().getPredecessor().doBackwardPass();
-    },
-
-    beginEpoch: function () {
-        this.epochSampleCount = 0;
-
-        for (layer of this.layers) {
-            layer.beginEpoch();
-        }
-    },
-
-    endEpoch: function () {
-        for (outputNode of this.getOutputLayer().nodes) {
-            outputNode.error /= this.epochSampleCount;
-        }
-        for (layer of this.layers) {
-            layer.endEpoch();
-        }
+    doBackwardPass: function (y) {
+        this.getOutputLayer().doBackwardPass(y);
     },
 });

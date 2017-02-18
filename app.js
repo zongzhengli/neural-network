@@ -1,4 +1,3 @@
-var TRAINING_BATCH_SIZE = 1;
 var TRAINING_UPDATE_MS = 50;
 
 function App() {
@@ -195,21 +194,15 @@ _.extend(App.prototype, {
                 break;
             }
 
-            this.network.beginEpoch();
-
-            for (var batch = 0; batch < TRAINING_BATCH_SIZE; batch++) {
-                var x = _.times(symbolCount, function () {
-                    return math.random(-2, 2);
-                });
-
-                var y = _.map(this.expressions(), function (koExpr, exprIndex) {
-                    return Expression.evaluate(codes[exprIndex], x);
-                });
-                
-                this.network.doForwardPass(x, y);
-            }
-            this.network.doBackwardPass();
-            this.network.endEpoch();
+            var x = _.times(symbolCount, function () {
+                return math.random(-2, 2);
+            });
+            var y = _.map(this.expressions(), function (koExpr, exprIndex) {
+                return Expression.evaluate(codes[exprIndex], x);
+            });
+            
+            this.network.doForwardPass(x);
+            this.network.doBackwardPass(y);
         }
         
         this.drawNetworkFast();

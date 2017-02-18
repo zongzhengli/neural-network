@@ -182,10 +182,10 @@ _.extend(Layer.prototype, {
         }
 
         if (this.isOutput()) {
-            for (node of this.nodes) {
-                node.computeErrorOutput(y);
+            _.each(this.nodes, function (node, nodeIndex) {
+                node.computeErrorOutput(y[nodeIndex]);
                 node.updateWeights();
-            }
+            });
         } else {
             _.each(this.nodes, function (node, nodeIndex) {
                 node.computeErrorHidden(nodeIndex);
@@ -262,6 +262,10 @@ _.extend(Network.prototype, {
 
     getValue: function (x) {
         return this.layers[1].getValue(x);
+    },
+
+    getLoss: function () {
+        return 0.5 * _.sumBy(this.getOutputLayer().nodes, math.square);
     },
 
     doForwardPass: function (x) {

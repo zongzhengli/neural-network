@@ -15,20 +15,16 @@ function App() {
     }]);
 
     this.inputCount = ko.observable(1);
-
-    this.trainButtonText = ko.observable("Train");
 }
 
 _.extend(App.prototype, {
     onClickTrain: function() {
         if (this.isTraining()) {
-            this.trainButtonText("Train");
             clearInterval(this.trainInterval);
             this.networkVis.enableButtons();
             this.drawNetworkFast();
             this.isTraining(false);
         } else {
-            this.trainButtonText("Stop");
             this.trainInterval = setInterval(this.trainNetwork.bind(this), TRAINING_UPDATE_MS);
             this.networkVis.disableButtons();
             this.isTraining(true);

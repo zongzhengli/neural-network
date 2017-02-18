@@ -34,11 +34,11 @@
                 text: isTraining() ? 'Stop' : 'Train',
                 click: onClickTrain,
                 enable: isEveryExpressionValid()"></button>
-
             <button type="button" class="btn standard" data-bind="click: onClickForget">Forget</button>
-
             <button type="button" class="btn standard" data-bind="click: onClickRandomExample">Random Example</button>
-
+            <span class="loss" data-bind="
+                text: 'Loss: ' + (isFinite(networkLoss()) ? networkLoss().toFixed(3) : '--')"></span>
+            
             <div data-bind="template: { foreach: expressions }">
 
                 <div class="input-group"

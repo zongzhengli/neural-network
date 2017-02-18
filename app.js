@@ -15,6 +15,8 @@ function App() {
     }]);
 
     this.inputCount = ko.observable(1);
+
+    this.networkLoss = ko.observable(undefined);
 }
 
 _.extend(App.prototype, {
@@ -36,6 +38,7 @@ _.extend(App.prototype, {
             this.onClickTrain();
         }
         this.network.randomizeWeights();
+        this.networkLoss(undefined);
         this.drawNetwork();
         this.drawEstimatedPlots();
     },
@@ -95,6 +98,7 @@ _.extend(App.prototype, {
             this.expressions.pop();
         }
 
+        this.networkLoss(undefined);
         $("input.expression").change();
     },
 
@@ -183,13 +187,14 @@ _.extend(App.prototype, {
             return;
         }
 
+        var iterations = 0;
+        var totalLoss = 0;
         var startTime = performance.now();
+        var hasTime = function () {
+            return iterations % 10 > 0 || performance.now() - startTime < TRAINING_UPDATE_MS;
+        };
 
-        for (var iteration = 0; this.isTraining; iteration++) {
-            if (iteration % 10 === 0 && performance.now() - startTime > TRAINING_UPDATE_MS) {
-                break;
-            }
-
+        while (this.isTraining() && hasTime()) {
             var x = _.times(symbolCount, function () {
                 return math.random(-2, 2);
             });
@@ -199,8 +204,12 @@ _.extend(App.prototype, {
             
             this.network.doForwardPass(x);
             this.network.doBackwardPass(y);
+
+            iterations++;
+            totalLoss += this.network.getLoss();
         }
         
+        this.networkLoss(totalLoss / iterations);
         this.drawNetworkFast();
         this.drawEstimatedPlotsFast();
     },

@@ -57,6 +57,21 @@ path.plot.estimated {
     stroke-width: 0.5px;
 }
 
+button.train {
+    color: white !important;
+    background: purple;
+    min-width: 80px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-family: 'Ubuntu', sans-serif;
+    border: none;
+    outline: none !important;
+}
+button.train:active { 
+    color: gray;
+    background-color: #580058;
+}
+
 button.standard {
     color: white !important;
     background: #444444;
@@ -72,19 +87,11 @@ button.standard:active {
     background-color: #404040;
 }
 
-button.train {
-    color: white !important;
-    background: purple;
-    min-width: 80px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    font-family: 'Ubuntu', sans-serif;
-    border: none;
-    outline: none !important;
-}
-button.train:active { 
+span.loss {
     color: gray;
-    background-color: #580058;
+    padding: 6px 12px 6px 12px;
+    font-family: 'Ubuntu', sans-serif;
+    float: right;
 }
 
 * {
@@ -108,13 +115,12 @@ button.train:active {
     font-family: 'Ubuntu', sans-serif;
     margin-bottom: 10px;
 }
-
-span {
+span.input-group-addon {
     color: gray !important;
     border: 0 !important;
     background-color: #202020 !important;
 }
-input {
+input.form-control {
     color: gray !important;
     border: 0 !important;
     background-color: #252525 !important;

@@ -15,8 +15,8 @@ function App() {
     }]);
 
     this.inputCount = ko.observable(1);
-
     this.networkLoss = ko.observable(undefined);
+    this.totalIterations = ko.observable(0);
 }
 
 _.extend(App.prototype, {
@@ -39,6 +39,7 @@ _.extend(App.prototype, {
         }
         this.network.randomizeWeights();
         this.networkLoss(undefined);
+        this.totalIterations(0);
         this.drawNetwork();
         this.drawEstimatedPlots();
     },
@@ -99,6 +100,7 @@ _.extend(App.prototype, {
         }
 
         this.networkLoss(undefined);
+        this.totalIterations(0);
         $("input.expression").change();
     },
 
@@ -207,6 +209,7 @@ _.extend(App.prototype, {
 
             iterations++;
             totalLoss += this.network.getLoss();
+            this.totalIterations(this.totalIterations() + 1);
         }
         
         this.networkLoss(totalLoss / iterations);

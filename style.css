@@ -5,7 +5,7 @@ div.right {
     background-color: #303030;
     min-height: 100vh;
 }
-div.bottom-right {
+div.control-group {
     padding: 50px;
 }
 
@@ -57,26 +57,11 @@ path.plot.estimated {
     stroke-width: 0.5px;
 }
 
-button.train {
-    color: white !important;
-    background: purple;
-    min-width: 80px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    font-family: 'Ubuntu', sans-serif;
-    border: none;
-    outline: none !important;
-}
-button.train:active { 
-    color: gray;
-    background-color: #580058;
-}
-
 button.standard {
     color: white !important;
     background: #444444;
-    min-width: 80px;
-    margin-right: 10px;
+    min-width: 70px;
+    margin-right: 8px;
     margin-bottom: 10px;
     font-family: 'Ubuntu', sans-serif;
     border: none;
@@ -87,11 +72,27 @@ button.standard:active {
     background-color: #404040;
 }
 
-span.loss {
+button.train {
+    background: purple;
+}
+button.train:active { 
+    background-color: #580058;
+}
+
+div.status-group {
+    display: inline-block;
+}
+span.status {
+    display: inline-block;
+    vertical-align: middle; 
     color: gray;
-    padding: 6px 12px 6px 12px;
+    margin-right: 6px;
+    margin-bottom: 10px;
     font-family: 'Ubuntu', sans-serif;
-    float: right;
+}
+span.divider {
+    height: 28px;
+    border-left: 1px solid gray;
 }
 
 * {

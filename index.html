@@ -29,16 +29,22 @@
     <div class="col-md-6 right">
         <svg class="graph" viewBox="0 0 400 300"></svg>
 
-        <div class="bottom-right">
-            <button type="button" class="btn train" data-bind="
+        <div class="control-group">
+            <button type="button" class="btn standard train" data-bind="
                 text: isTraining() ? 'Stop' : 'Train',
                 click: onClickTrain,
                 enable: isEveryExpressionValid()"></button>
             <button type="button" class="btn standard" data-bind="click: onClickForget">Forget</button>
             <button type="button" class="btn standard" data-bind="click: onClickRandomExample">Random Example</button>
-            <span class="loss" data-bind="
-                text: 'Loss: ' + (isFinite(networkLoss()) ? networkLoss().toFixed(3) : '--')"></span>
-            
+
+            <div class="status-group">
+                <span class="status" data-bind="
+                    text: 'Iterations: ' + totalIterations()"></span>
+                <span class="status divider"></span>
+                <span class="status" data-bind="
+                    text: 'Loss: ' + (isFinite(networkLoss()) ? networkLoss().toFixed(3) : '--')"></span>
+            </div>
+
             <div data-bind="template: { foreach: expressions }">
 
                 <div class="input-group"

@@ -1,13 +1,6 @@
 body {
     background-color: #353535;
 }
-div.right {
-    background-color: #303030;
-    min-height: 100vh;
-}
-div.control-group {
-    padding: 50px;
-}
 
 svg.network {
     max-height: calc(100vh - 10px);
@@ -36,6 +29,10 @@ rect.button {
     cursor: pointer;
 }
 
+div.right {
+    background-color: #303030;
+    min-height: 100vh;
+}
 svg.graph {
     margin-top: 20px;
 }
@@ -57,6 +54,9 @@ path.plot.estimated {
     stroke-width: 0.5px;
 }
 
+div.control-group {
+    padding: 50px;
+}
 button.standard {
     color: white !important;
     background: #444444;
@@ -71,7 +71,6 @@ button.standard:active {
     color: gray;
     background-color: #404040;
 }
-
 button.train {
     background: purple;
 }
@@ -81,6 +80,7 @@ button.train:active {
 
 div.status-group {
     display: inline-block;
+    min-width: 210px;
 }
 span.status {
     display: inline-block;

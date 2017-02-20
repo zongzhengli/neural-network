@@ -15,7 +15,8 @@ var Activation = {
         },
 
         fp: function (a) {
-            return this.f(a) * (1 - this.f(a));
+            var b = this.f(a);
+            return b * (1 - b);
         },
     },
 

@@ -1,5 +1,5 @@
-var LEARNING_RATE = 0.001;
-var MOMENTUM = 0.01;
+var LEARNING_RATE = 0.01;
+var MOMENTUM = 0.1;
 var WEIGHT_DECAY = 0.001;
 
 function Node(layer, predCount) {
@@ -89,7 +89,7 @@ function Layer(network, index) {
     this.network = network;
     this.nodes = [new Node(this, 0)];
     this.index = index;
-    this.activation = Activation.sigmoid;
+    this.activation = Activation.tanh;
 }
 
 _.extend(Layer.prototype, {

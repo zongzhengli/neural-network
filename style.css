@@ -47,11 +47,11 @@ rect.plot {
 }
 path.plot.actual {
     stroke: gray;
-    stroke-width: 0.5px;
+    stroke-width: 0.75px;
 }
 path.plot.estimated {
     stroke: purple;
-    stroke-width: 0.5px;
+    stroke-width: 0.75px;
 }
 
 div.control-group {
@@ -92,7 +92,7 @@ span.status {
 }
 span.divider {
     height: 28px;
-    border-left: 1px solid gray;
+    border-left: 1.5px solid gray;
 }
 
 * {

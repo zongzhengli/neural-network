@@ -1,5 +1,5 @@
-var LEARNING_RATE = 0.01;
-var MOMENTUM = 0.1;
+var LEARNING_RATE = 0.003;
+var MOMENTUM = 0.01;
 var WEIGHT_DECAY = 0.001;
 
 function Node(layer, predCount) {

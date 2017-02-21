@@ -36,11 +36,11 @@ var Expression = {
 
     getRandom: function (exprCount, varCount) {
         var p = math.pickRandom;
-        var c1 = ["", "", "", "", "2", "2", "3", "4"];
+        var c1 = ["", "", "", "", "2", "2", "3", "3"];
         var c2 = ["2", "2", "2", "3", "3"];
         var c3 = ["1", "1", "2", "3"];
         var c4 = ["-1", "1"];
-        var c5 = ["3", "4", "5", "6", "7"];
+        var c5 = ["1", "1", "2", "2", "3"];
         var o1 = ["+", "+", "+", "+", "+", "-", "-", "-", "*"];
         var f1 = _.shuffle([
             function (x) { return p(c1) + x; },
@@ -50,6 +50,7 @@ var Expression = {
             //function (x) { return p(c2) + "^" + x + "-" + x; },
             //function (x) { return x + "^" + x; },
             //function (x) { return p(c3) + "/" + x; },
+            function (x) { return p(c5) + "/(" + x + "+3)"; },
             //function (x) { return p(c3) + "/" + x + "-" + x; },
             //function (x) { return p(c3) + "/" + p(c2) + "^" + x; },
             function (x) { return p(c3) + "/(1+" + x + "^2)"; },
@@ -60,15 +61,17 @@ var Expression = {
             function (x) { return "sqrt(" + x + "+2)" },
             function (x) { return "log(" + x + "+3)"; },
             //function (x) { return "log(" + x + ")^2"; },
-            function (x) { return "log(abs(" + x + ")+1)"; },
-            function (x) { return "sin(" + x + ")"; },
+            function (x) { return "sin(" + p(c1) + x + ")"; },
             function (x) { return "sin(" + x + ")^" + p(c2); },
             function (x) { return "sin(" + x + ")*" + x; },
             //function (x) { return "sin(" + x + ")+" + x; },
             function (x) { return "sin(" + x + ")+sin(" + p(c2) + x + ")"; },
             function (x) { return "sin(5" + x + ")/(5" + x + ")"; },
+            function (x) { return "sin(e^" + x + ")"; },
+            function (x) { return "sin(abs(" + x + "))"; },
+            function (x) { return "sin(" + x + ")-abs(" + x + ")"; },
             function (x) { return "sign(cos(2" + x + "))"; },
-            function (x) { return "cos(" + x + ")"; },
+            function (x) { return "cos(" + p(c1) + x + ")"; },
             //function (x) { return x + "/cos(" + x + ")"; },
             //function (x) { return "tan(" + x + ")"; },
             //function (x) { return "tan(" + x + ")^2"; },
@@ -82,9 +85,11 @@ var Expression = {
             function (x) { return "floor(" + x + ")"; },
             function (x) { return "mod(" + x + "," + p(c2) + ")"; },
             function (x) { return "min(" + x + "," + p(c4) + ")"; },
-            function (x) { return "max(" + x + "," + p(c5) + x + ")"; },
+            function (x) { return "min(abs(" + x + "),1)"; },
+            function (x) { return "max(" + x + ",3" + x + ")"; },
             function (x) { return p(c3) + "/(1+e^(-" + p(c2) + x + "))"; },
             function (x) { return "e^-" + x + "^2"; },
+            function (x) { return "e^sin(" + x + ")"; },
         ]);
 
         var symbols = _.take(this.symbols, varCount);

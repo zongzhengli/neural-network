@@ -64,7 +64,7 @@ _.extend(Node.prototype, {
     computeErrorHidden: function (index) {
         this.error = this.layer.activation.fp(this.a) * 
             _.sumBy(this.layer.getSuccessorNodes(), function (succNode) {
-                return succNode.weights[index + 1] * succNode.error;
+                return succNode.weights[index] * succNode.error;
             });
     },
 
@@ -72,14 +72,14 @@ _.extend(Node.prototype, {
         var self = this;
         var predNodes = self.layer.getPredecessorNodes();
 
-        self.deltas = _.map(self.deltas, function (delta, i) {
-            var gradient = self.error * (i > 0 ? predNodes[i - 1].z : 1);
-            return MOMENTUM * delta -
+        for (var i = 0; i < self.weights.length; i++) {
+            var predNode = predNodes[i];
+            var gradient = self.error * (predNode ? predNodes[i].z : 1);
+
+            self.deltas[i] = MOMENTUM * self.deltas[i] -
                 LEARNING_RATE * gradient - 
                 LEARNING_RATE * WEIGHT_DECAY * self.weights[i];
-        });
-        
-        for (var i = 0; i < self.weights.length; i++) {
+
             self.weights[i] += self.deltas[i];
         }
     },
@@ -146,12 +146,13 @@ _.extend(Layer.prototype, {
     },
 
     getValue: function (x) {
-        x = x.slice();
-        x.unshift(1);
+        x.push(1);
 
         var y = _.map(this.nodes, function (node) {
             return node.getValue(x);
         });
+
+        x.pop();
 
         var succLayer = this.getSuccessor();
         return succLayer ? succLayer.getValue(y) : y;
@@ -163,7 +164,7 @@ _.extend(Layer.prototype, {
                 node.z = x[nodeIndex];
             });
         } else {
-            x.unshift(1);
+            x.push(1);
 
             for (node of this.nodes) {
                 node.computeValue(x);

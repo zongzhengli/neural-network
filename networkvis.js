@@ -129,7 +129,7 @@ _.extend(NetworkVis.prototype, {
         var predYScale = self.getNodeYScale(predLayer);
 
         var edgeGroups = nodeGroup.selectAll("g.edge")
-            .data(node.weights);
+            .data(_.initial(node.weights));
         edgeGroups.enter()
             .append("g")
             .classed("edge", true);
@@ -139,13 +139,9 @@ _.extend(NetworkVis.prototype, {
 
         nodeGroup.selectAll("g.edge")
             .each(function (weight, weightIndex) {
-                if (weightIndex === 0) {
-                    return;
-                }
                 var edgeGroup = d3.select(this);
-                var predNodeIndex = weightIndex - 1;
                 var predNodeX = xScale(layerIndex - 1 + (predLayerExiting ? 1 : 0));
-                var predNodeY = predYScale(Math.min(predNodeIndex, predLayer.nodes.length - 1));
+                var predNodeY = predYScale(Math.min(weightIndex, predLayer.nodes.length - 1));
 
                 var path = d3.path();
                 path.moveTo(predNodeX, predNodeY);

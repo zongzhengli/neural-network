@@ -44,12 +44,18 @@ _.extend(Node.prototype, {
     },
 
     getValue: function (x) {
-        var a = math.dot(x, this.weights);
+        var a = 0;
+        for (var i = 0; i < x.length; i++) {
+            a += x[i] * this.weights[i];
+        }
         return this.layer.activation.f(a);
     },
 
     computeValue: function (x) {
-        this.a = math.dot(x, this.weights);
+        this.a = 0;
+        for (var i = 0; i < x.length; i++) {
+            this.a += x[i] * this.weights[i];
+        }
         this.z = this.layer.activation.f(this.a);
     },
 

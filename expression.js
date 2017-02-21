@@ -2,9 +2,9 @@ var Expression = {
     symbols: ["x", "y", "z", "w", "v", "u", "t", "r", "p", "q"],
 
     getScope: function (values) {
-        var symbols = _.take(this.symbols, values.length);
-        return scope = _(symbols)
-            .map(function (symbol, i) { return [symbol, values[i]]; })
+        var symbols = this.symbols;
+        return scope = _(values)
+            .map(function (value, i) { return [symbols[i], value]; })
             .fromPairs()
             .value();
     },

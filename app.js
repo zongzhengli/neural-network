@@ -15,8 +15,8 @@ function App() {
     }]);
 
     this.inputCount = ko.observable(1);
-    this.networkLoss = ko.observable(undefined);
-    this.totalIterations = ko.observable(0);
+    this.networkLoss = ko.observable(undefined).extend({ rateLimit: TRAINING_UPDATE_MS });
+    this.totalIterations = ko.observable(0).extend({ rateLimit: TRAINING_UPDATE_MS });
 }
 
 _.extend(App.prototype, {
@@ -52,10 +52,10 @@ _.extend(App.prototype, {
         var inputLayer = this.network.getInputLayer();
         var outputLayer = this.network.getOutputLayer();
 
-        var inputCount = math.randomInt(1, 3);
-        var outputCount = math.randomInt(1, 3);
-        var layerCount = math.randomInt(3, 5);
-        var hiddenNodeCount = math.randomInt(2, 11);
+        var inputCount = _.random(1, 2);
+        var outputCount = _.random(1, 2);
+        var layerCount = _.random(3, 4);
+        var hiddenNodeCount = _.random(2, 10);
 
         while (inputLayer.nodes.length < inputCount) {
             inputLayer.addNode();

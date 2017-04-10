@@ -272,7 +272,7 @@ _.extend(Network.prototype, {
     },
 
     getLoss: function () {
-        return 0.5 * _(this.getOutputLayer().nodes)
+        return _(this.getOutputLayer().nodes)
             .map("error")
             .sumBy(math.square);
     },

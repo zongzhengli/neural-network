@@ -1,5 +1,5 @@
 $(function() {
-    $(".popover").popover();
+    $('[data-toggle="popover"]').popover();
 
     app = new App();
     app.drawAll();

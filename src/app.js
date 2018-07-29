@@ -33,7 +33,7 @@ _.extend(App.prototype, {
         }
     },
 
-    onClickForget: function() {
+    onClickReset: function() {
         if (this.isTraining()) {
             this.onClickTrain();
         }

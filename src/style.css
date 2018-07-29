@@ -99,7 +99,7 @@ span.divider {
     border-radius: 0 !important;
 }
 
-.popover {
+.popover.left {
     background-color: #b33f2d;
     border-radius: 0;
     color: white;
@@ -110,6 +110,19 @@ span.divider {
 }
 .popover.left > .arrow:after {
     border-left-color: #b33f2d;
+}
+
+.popover.top {
+    background-color: #444444;
+    border-radius: 0;
+    color: white;
+    font-family: 'Ubuntu', sans-serif;
+}
+.popover.top > .arrow {
+    border-top-color: #444444;
+}
+.popover.top > .arrow:after {
+    border-top-color: #444444;
 }
 
 .input-group {

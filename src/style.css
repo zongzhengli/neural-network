@@ -115,6 +115,7 @@ span.divider {
 .popover.top {
     background-color: #444444;
     border-radius: 0;
+    min-width: 350px;
     color: white;
     font-family: 'Ubuntu', sans-serif;
 }

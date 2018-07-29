@@ -41,8 +41,25 @@
             <button
                 type="button"
                 class="btn standard"
-                data-bind="click: onClickForget">
-                Forget
+                data-bind="click: onClickReset">
+                Reset
+            </button>
+            <button
+                type="button"
+                class="btn standard"
+                tabindex="0"
+                data-toggle="popover"
+                data-trigger="focus"
+                data-placement="top"
+                data-html="true"
+                data-content="On the left is the neural network to be trained. The input nodes are marked with x, y, z, ... while the output nodes are marked with F1, F2, F3, ... 
+                <br><br>
+                At the top right are graphs of the functions to train on. The white lines are the actual functions while the magenta lines are the learned functions.
+                <br><br>
+                At the bottom right are the function equations. Each input node corresponds to an available input variable and each output node is assigned a function equation.
+                <br><br>
+                During training, the network is fed randomly sampled values from the actual functions. The network attempts to learn the functions from this data.">
+                Help
             </button>
             <button
                 type="button"

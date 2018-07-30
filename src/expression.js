@@ -41,11 +41,13 @@ var Expression = {
         var c3 = ["1", "1", "2", "3"];
         var c4 = ["-1", "1"];
         var c5 = ["1", "1", "2", "2", "3"];
-        var o1 = ["+", "+", "+", "+", "+", "-", "-", "-", "*"];
+        var o1 = ["", "", "-"];
+        var o2 = ["+", "+", "+", "+", "+", "-", "-", "-", "*"];
         var f1 = _.shuffle([
             function (x) { return p(c1) + x; },
             function (x) { return x + "/" + p(c2); },
             function (x) { return x + "^" + p(c2); },
+            function (x) { return x + "^4/4"; },
             function (x) { return p(c2) + "^" + x; },
             //function (x) { return p(c2) + "^" + x + "-" + x; },
             //function (x) { return x + "^" + x; },
@@ -62,6 +64,7 @@ var Expression = {
             function (x) { return "log(" + x + "+3)"; },
             //function (x) { return "log(" + x + ")^2"; },
             function (x) { return "sin(" + p(c1) + x + ")"; },
+            function (x) { return "sin(" + x + ")/" + p(c2); },
             function (x) { return "sin(" + x + ")^" + p(c2); },
             function (x) { return "sin(" + x + ")*" + x; },
             //function (x) { return "sin(" + x + ")+" + x; },
@@ -86,6 +89,7 @@ var Expression = {
             function (x) { return "mod(" + x + "," + p(c2) + ")"; },
             function (x) { return "min(" + x + "," + p(c4) + ")"; },
             function (x) { return "min(abs(" + x + "),1)"; },
+            function (x) { return "min(" + x + "^2,1/abs(" + x + "))"; },
             function (x) { return "max(" + x + ",3" + x + ")"; },
             function (x) { return p(c3) + "/(1+e^(-" + p(c2) + x + "))"; },
             function (x) { return "e^-" + x + "^2"; },
@@ -96,7 +100,7 @@ var Expression = {
         var fIndex = 0;
         return _.times(exprCount, function () {
             return _.map(symbols, function (symbol, symbolIndex) {
-                return (symbolIndex > 0 ? p(o1) : "") + f1[fIndex++](symbol);
+                return (symbolIndex > 0 ? p(o2) : p(o1)) + f1[fIndex++](symbol);
             }).join("");
         });
     },
